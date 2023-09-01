@@ -1,0 +1,29 @@
+# 服务通用配置
+application:
+  # 模式: debug(开发模式)，prod(生产模式)
+  mode: debug
+  # API 服务端口
+  port: 8080
+
+# mysql数据库
+mysql:
+  master: "root:123456@tcp(127.0.0.1:3306)/qingwu?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+
+# redis缓存
+redis:
+  addr: 127.0.0.1:6379
+  password:
+  db: 0
+
+# 阿里云
+aliyun:
+  accessKeyId:
+  accessKeySecret:
+  regionId:
+
+# 七牛服务
+qiniu:
+  accessKey: ""
+  secretKey: ""
+  bucket: ""
+  domain: ""
