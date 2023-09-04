@@ -114,20 +114,20 @@ func (ec *ExportCenter) PopData(key string) string {
 
 // GetTask 获取任务信息
 func (ec *ExportCenter) GetTask(id int64) (info model.Task, err error) {
-
-	return
+	task := model.Task{}
+	return task.FindByID(id)
 }
 
 // CompleteTask 完成任务
 func (ec *ExportCenter) CompleteTask(id int64) error {
-
-	return nil
+	task := model.Task{}
+	return task.UpdateStatusByID(id, model.TaskStatusCompleted)
 }
 
 // FailTask 任务失败
 func (ec *ExportCenter) FailTask(id int64) error {
-
-	return nil
+	task := model.Task{}
+	return task.UpdateStatusByID(id, model.TaskStatusFail)
 }
 
 // ExportToExcelCSV 导出成excel表格，格式csv

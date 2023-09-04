@@ -33,10 +33,29 @@ type ExportOptions struct {
 	Header   []string `json:"header"`    // 表头配置
 }
 
+type TaskStatus int
+
+const (
+	TaskStatusWait      TaskStatus = 1
+	TaskStatusConsult   TaskStatus = 2
+	TaskStatusCompleted TaskStatus = 3
+	TaskStatusFail      TaskStatus = 3
+	TaskStatusAbandon   TaskStatus = 4
+)
+
 func (m *Task) TableName() string {
 	return "task"
 }
 
 func (m *Task) Create() error {
 	return exportcenter.DbClient.Model(&m).Create(&m).Error
+}
+
+func (m *Task) FindByID(id int64) (info Task, err error) {
+	err = exportcenter.DbClient.Model(&m).Where("id = ?", id).First(&info).Error
+	return
+}
+
+func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
+	return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
 }
