@@ -41,7 +41,7 @@ func TestGenUid(t *testing.T) {
 }
 
 func TestTaskExport(t *testing.T) {
-	er := service.ExportToExcelCSV(1, "./test.csv")
+	er := service.ExportToExcelCSV(1, "./test.xlsx")
 	if er != nil {
 		fmt.Println(er)
 		return
