@@ -13,6 +13,8 @@ mysql:
   slave: "root:root@tcp(127.0.0.1:3306)/local?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
   # 亚马逊主库
   amazon: "root:root@tcp(127.0.0.1:3306)/local?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+  # 表前缀
+  masterTablePrefix: yb_
 
 # redis缓存
 redis:
