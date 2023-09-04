@@ -2,7 +2,6 @@ package exportcenter
 
 import (
 	"errors"
-	"export_system/pkg/exportcenter/model"
 	"fmt"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/ants/v2"
@@ -61,7 +60,7 @@ func NewClient(options Options) (*ExportCenter, error) {
 	DbClient = options.Db
 
 	// 自动创建任务表
-	err := DbClient.AutoMigrate(&model.Task{})
+	err := DbClient.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&Task{})
 	if err != nil {
 		return nil, err
 	}
@@ -75,17 +74,17 @@ func NewClient(options Options) (*ExportCenter, error) {
 }
 
 // CreateTask 创建导出任务
-func (ec *ExportCenter) CreateTask(key, name, description, source, destination, format string, count int64, options model.ExportOptions) (uint, error) {
+func (ec *ExportCenter) CreateTask(key, name, description, source, destination, format string, count int64, options ExportOptions) (uint, error) {
 	marshal, err := json.Marshal(options)
 	if err != nil {
 		return 0, err
 	}
 
 	// 创建导出任务
-	task := model.Task{
+	task := Task{
 		Name:          name,
 		Description:   description,
-		Status:        model.TaskStatusWait.ParseInt(),
+		Status:        TaskStatusWait.ParseInt(),
 		ProgressRate:  0,
 		Source:        source,
 		Destination:   destination,
@@ -113,32 +112,32 @@ func (ec *ExportCenter) PopData(key string) string {
 }
 
 // GetTask 获取任务信息
-func (ec *ExportCenter) GetTask(id int64) (info model.Task, err error) {
-	task := model.Task{}
+func (ec *ExportCenter) GetTask(id int64) (info Task, err error) {
+	task := Task{}
 	return task.FindByID(id)
 }
 
 // CompleteTask 完成任务
 func (ec *ExportCenter) CompleteTask(id int64) error {
-	task := model.Task{}
-	return task.UpdateStatusByID(id, model.TaskStatusCompleted)
+	task := Task{}
+	return task.UpdateStatusByID(id, TaskStatusCompleted)
 }
 
 // ConsultTask 任务进行中
 func (ec *ExportCenter) ConsultTask(id int64) error {
-	task := model.Task{}
-	return task.UpdateStatusByID(id, model.TaskStatusConsult)
+	task := Task{}
+	return task.UpdateStatusByID(id, TaskStatusConsult)
 }
 
 // FailTask 任务失败
 func (ec *ExportCenter) FailTask(id int64) error {
-	task := model.Task{}
-	return task.UpdateStatusByID(id, model.TaskStatusFail)
+	task := Task{}
+	return task.UpdateStatusByID(id, TaskStatusFail)
 }
 
 // UpdateTaskDownloadUrl 更新任务文件下载链接
 func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
-	task := model.Task{}
+	task := Task{}
 	return task.UpdateDownloadUrlByID(id, url)
 }
 
@@ -170,7 +169,7 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 	swMap := make(map[int32]*excelize.StreamWriter, 0)
 
 	// 获取表格标题
-	options := model.ExportOptions{}
+	options := ExportOptions{}
 	err = json.Unmarshal([]byte(task.ExportOptions), &options)
 	if err != nil {
 		return err
@@ -210,7 +209,7 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 		sw, err := f.NewStreamWriter(currentSheet)
 		if err != nil {
 			fmt.Println(err)
-			return
+			return err
 		}
 		swMap[int32(i)] = sw
 	}

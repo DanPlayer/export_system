@@ -1,7 +1,6 @@
-package model
+package exportcenter
 
 import (
-	"export_system/pkg/exportcenter"
 	"gorm.io/gorm"
 	"time"
 )
@@ -14,8 +13,8 @@ type Task struct {
 	Description   string    `gorm:"type:text;comment:'描述'"`
 	Status        int       `gorm:"type:tinyint(1);default:1;comment:'状态 1-待处理、2-处理中、3-已完成、4-失败、5-任务废弃'"`
 	ProgressRate  int       `gorm:"type:tinyint(3);default:0;comment:'任务进度1-100'"`
-	StartTime     time.Time `gorm:"type:timestamp;not null;comment:'任务开始时间'"`
-	EndTime       time.Time `gorm:"type:timestamp;not null;comment:'任务结束时间'"`
+	StartTime     time.Time `gorm:"type:datetime;comment:'任务开始时间'"`
+	EndTime       time.Time `gorm:"type:datetime;comment:'任务结束时间'"`
 	Source        string    `gorm:"type:varchar(255);comment:'数据源，描述导出数据的来源'"`
 	Destination   string    `gorm:"type:varchar(255);comment:'数据目标，描述导出数据的存储位置'"`
 	ExportFormat  string    `gorm:"type:varchar(255);comment:'导出格式，如CSV、JSON、XML等'"`
@@ -47,30 +46,26 @@ func (s TaskStatus) ParseInt() int {
 	return int(s)
 }
 
-func (m *Task) TableName() string {
-	return "task"
-}
-
 func (m *Task) Create() error {
-	return exportcenter.DbClient.Model(&m).Create(&m).Error
+	return DbClient.Model(&m).Create(&m).Error
 }
 
 func (m *Task) FindByID(id int64) (info Task, err error) {
-	err = exportcenter.DbClient.Model(&m).Where("id = ?", id).First(&info).Error
+	err = DbClient.Model(&m).Where("id = ?", id).First(&info).Error
 	return
 }
 
 func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
 	if status == TaskStatusCompleted {
-		return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
+		return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
 			"status":        status,
 			"progress_rate": 100,
 		}).Error
 	} else {
-		return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
+		return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
 	}
 }
 
 func (m *Task) UpdateDownloadUrlByID(id int64, url string) error {
-	return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("download_url", url).Error
+	return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("download_url", url).Error
 }

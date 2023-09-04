@@ -15,13 +15,11 @@ import (
 
 // Config 数据配置信息
 type Config struct {
-	// 数据库，支持：MySQL、PostgreSQL, SQLServer等
-	// 数据库DNS,，例如：user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
-	DNS string
-	// 最大连接数
-	MaxOpenConns int `database:"default:60"`
-	// 最大空闲数
-	MaxIdleConns int `database:"default:10"`
+	// 数据库，支持：MySQL、PostgresSQL, SQLServer等
+	DNS          string // 数据库DNS,，例如：user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
+	TablePrefix  string // 表前缀
+	MaxOpenConns int    `database:"default:60"` // 最大连接数
+	MaxIdleConns int    `database:"default:10"` // 最大空闲数
 }
 
 // New 初始化MySQL数据库连接
@@ -47,7 +45,10 @@ func initConnection(dial gorm.Dialector, config Config) (db *gorm.DB, err error)
 	)
 	if originDB, err = gorm.Open(dial, &gorm.Config{
 		// 设置数据库表名称为单数(User,复数Users末尾自动添加s)
-		NamingStrategy: schema.NamingStrategy{SingularTable: true},
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix:   config.TablePrefix,
+			SingularTable: true,
+		},
 	}); err != nil {
 		return nil, err
 	}

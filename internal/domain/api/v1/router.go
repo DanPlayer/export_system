@@ -2,7 +2,6 @@ package v1
 
 import (
 	"export_system/internal/domain/api/v1/export"
-	"export_system/internal/domain/api/v1/sms"
 	"export_system/internal/domain/api/v1/upload"
 	"export_system/internal/domain/api/v1/user"
 	"export_system/internal/domain/common"
@@ -15,11 +14,6 @@ func Setup() common.ModuleOption {
 	return common.ModuleOption{
 		Name: "v1",
 		ChildList: []common.ModuleChild{
-			{
-				Route:   "/sms/send/login/code",
-				Method:  "POST",
-				Handles: []gin.HandlerFunc{sms.SendLoginSms},
-			},
 			{
 				Route:   "/user/sms/login",
 				Method:  "POST",

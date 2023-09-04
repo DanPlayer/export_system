@@ -25,7 +25,8 @@ func AutoMigrateApiServerTable(modes ...interface{}) {
 
 func NewMasterClient() *gorm.DB {
 	client := mysql.New(mysql.Config{
-		DNS: config.Config.MySQL.Master,
+		DNS:         config.Config.MySQL.Master,
+		TablePrefix: config.Config.MySQL.MasterTablePrefix,
 	})
 	// 从库自动加载
 	_ = client.Use(dbresolver.Register(dbresolver.Config{

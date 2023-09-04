@@ -2,13 +2,13 @@ package service
 
 import (
 	"export_system/internal/export"
-	"export_system/pkg/exportcenter/model"
+	"export_system/pkg/exportcenter"
 	"export_system/pkg/rtnerr"
 )
 
 // CreateExportTask 创建导出任务
 func CreateExportTask(key, name, fileName, description, source, destination, format string, count int64, header []string) (id uint, err rtnerr.RtnError) {
-	id, er := export.Client.CreateTask(key, name, description, source, destination, format, count, model.ExportOptions{
+	id, er := export.Client.CreateTask(key, name, description, source, destination, format, count, exportcenter.ExportOptions{
 		FileName: fileName,
 		Header:   header,
 	})

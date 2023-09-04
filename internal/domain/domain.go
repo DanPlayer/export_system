@@ -2,7 +2,6 @@ package domain
 
 import (
 	v1 "export_system/internal/domain/api/v1"
-	"export_system/internal/domain/backend"
 	"export_system/internal/domain/common"
 	"export_system/internal/domain/crontab"
 	"export_system/internal/domain/docs"
@@ -15,7 +14,6 @@ func Registry() common.ModuleOptionList {
 		docs.Setup(),
 		tool.Setup(),
 		v1.Setup(),
-		backend.Setup(),
 		crontab.Setup(),
 	}
 }

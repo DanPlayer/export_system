@@ -6,9 +6,9 @@ import (
 	"export_system/pkg/exportcenter"
 )
 
-var Client *exportcenter.ExportCenter
+var Client = NewClient()
 
-func NewClient() {
+func NewClient() *exportcenter.ExportCenter {
 	// 开启导出中心
 	center, err := exportcenter.NewClient(exportcenter.Options{
 		Db:           db.MasterClient,
@@ -19,9 +19,8 @@ func NewClient() {
 		GoroutineMax: 30,
 	})
 	if err != nil {
-		return
+		return nil
 	}
 
-	Client = center
-	return
+	return center
 }

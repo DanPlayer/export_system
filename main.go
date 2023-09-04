@@ -6,9 +6,7 @@ import (
 	"export_system/internal/config"
 	"export_system/internal/domain"
 	"export_system/internal/domain/qiniu"
-	"export_system/internal/export"
 	"export_system/internal/middleware"
-	"export_system/internal/rabbitmq"
 	"export_system/internal/timewheel"
 	gracefulExit "github.com/NICEXAI/graceful-exit"
 	"github.com/gin-gonic/gin"
@@ -62,12 +60,6 @@ func main() {
 	// 开启时间轮服务
 	timewheel.Client.Start()
 	defer timewheel.Client.Stop()
-
-	// 开启MQ
-	rabbitmq.NewRabbitMQ()
-
-	// 开启导出中心服务
-	export.NewClient()
 
 	server := &http.Server{
 		Addr:         ":" + strconv.Itoa(config.Config.Application.Port),

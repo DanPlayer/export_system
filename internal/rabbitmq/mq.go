@@ -7,7 +7,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var Client *RabbitMQ
+var Client = NewRabbitMQ()
 
 // RabbitMQ rabbitMQ结构体
 type RabbitMQ struct {
@@ -23,7 +23,7 @@ type Options struct {
 }
 
 // NewRabbitMQ 创建简单模式下RabbitMQ实例
-func NewRabbitMQ() {
+func NewRabbitMQ() *RabbitMQ {
 	options := Options{
 		UserName: "guest",
 		Password: "guest",
@@ -40,8 +40,7 @@ func NewRabbitMQ() {
 	rabbitmq.channel, err = rabbitmq.conn.Channel()
 	rabbitmq.failOnErr(err, "failed to open a channel")
 
-	Client = rabbitmq
-	return
+	return rabbitmq
 }
 
 // Create 创建队列

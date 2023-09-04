@@ -8,9 +8,10 @@ type Settings struct {
 	} `mapstructure:"application"`
 
 	MySQL struct {
-		Master string `mapstructure:"master"`
-		Slave  string `mapstructure:"slave"`
-		Amazon string `mapstructure:"amazon"`
+		Master            string `mapstructure:"master"`
+		Slave             string `mapstructure:"slave"`
+		Amazon            string `mapstructure:"amazon"`
+		MasterTablePrefix string `mapstructure:"masterTablePrefix"`
 	} `mapstructure:"mysql"`
 
 	Redis struct {
