@@ -20,7 +20,8 @@ type CreateTaskRequest struct {
 }
 
 type CreateTaskResponse struct {
-	ID uint `json:"id"` // 任务ID
+	ID   uint     `json:"id"`   // 任务ID
+	Keys []string `json:"keys"` // 所有队列key值，用于推送数据到不同队列，队列key由数据量生成
 }
 
 // CreateTask
@@ -39,14 +40,15 @@ func CreateTask(c *gin.Context) {
 		utils.OutErrorJson(c, err)
 		return
 	}
-	id, err := service.CreateExportTask(req.Key, req.Name, req.FileName, req.Description, req.Source, req.Destination, req.Format, req.Count, req.Header)
+	id, keys, err := service.CreateExportTask(req.Key, req.Name, req.FileName, req.Description, req.Source, req.Destination, req.Format, req.Count, req.Header)
 	if err != nil {
 		utils.OutErrorJson(c, err)
 		return
 	}
 
 	utils.OutJson(c, CreateTaskResponse{
-		ID: id,
+		ID:   id,
+		Keys: keys,
 	})
 }
 

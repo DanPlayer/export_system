@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"export_system/internal/domain/ip2region"
+	"export_system/internal/domain/service"
 	"export_system/utils"
 	"fmt"
 	"github.com/sony/sonyflake"
@@ -34,16 +34,16 @@ func TestGenNumber(t *testing.T) {
 	fmt.Println(number)
 }
 
-func TestIpAddress(t *testing.T) {
-	region, err := ip2region.Searcher.SearchByStr("171.113.249.158")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(region)
-}
-
 func TestGenUid(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		fmt.Println(utils.GetUid())
+	}
+}
+
+func TestTaskExport(t *testing.T) {
+	er := service.ExportToExcelCSV(1, "./test.csv")
+	if er != nil {
+		fmt.Println(er)
+		return
 	}
 }

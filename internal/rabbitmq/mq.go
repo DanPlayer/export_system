@@ -11,8 +11,9 @@ var Client = NewRabbitMQ()
 
 // RabbitMQ rabbitMQ结构体
 type RabbitMQ struct {
-	conn    *amqp.Connection
-	channel *amqp.Channel
+	conn     *amqp.Connection
+	channel  *amqp.Channel
+	consumer map[string]<-chan amqp.Delivery
 }
 
 type Options struct {
@@ -40,6 +41,8 @@ func NewRabbitMQ() *RabbitMQ {
 	rabbitmq.channel, err = rabbitmq.conn.Channel()
 	rabbitmq.failOnErr(err, "failed to open a channel")
 
+	rabbitmq.consumer = make(map[string]<-chan amqp.Delivery, 0)
+
 	return rabbitmq
 }
 
@@ -65,7 +68,7 @@ func (r *RabbitMQ) Create(key string) error {
 	}
 
 	// 申请队列
-	_, err = r.channel.QueueDeclare(
+	q, err := r.channel.QueueDeclare(
 		queue,
 		false,
 		false,
@@ -79,7 +82,7 @@ func (r *RabbitMQ) Create(key string) error {
 
 	// 绑定队列与交换机
 	err = r.channel.QueueBind(
-		queue,
+		q.Name,
 		bindKey,
 		exchange,
 		false,
@@ -89,6 +92,27 @@ func (r *RabbitMQ) Create(key string) error {
 	if err != nil {
 		return err
 	}
+
+	// 创建消费者
+	consumer, err := r.channel.Consume(
+		queue, // queue
+		// 用来区分多个消费者
+		"", // consumer
+		// 是否自动应答
+		true, // auto-ack
+		// 是否独有
+		false, // exclusive
+		// 设置为true，表示 不能将同一个Conenction中生产者发送的消息传递给这个Connection中 的消费者
+		false, // no-local
+		// 列是否阻塞
+		false, // no-wait
+		nil,   // args
+	)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	r.consumer[key] = consumer
 
 	return nil
 }
@@ -110,30 +134,16 @@ func (r *RabbitMQ) Push(key, data string) error {
 }
 
 // Pop 消费队列
-func (r *RabbitMQ) Pop(key string) string {
-	queue := fmt.Sprintf("%s-queue", key)
-
+func (r *RabbitMQ) Pop(key string) <-chan string {
 	//接收消息
-	msg, err := r.channel.Consume(
-		queue, // queue
-		// 用来区分多个消费者
-		"", // consumer
-		// 是否自动应答
-		true, // auto-ack
-		// 是否独有
-		false, // exclusive
-		// 设置为true，表示 不能将同一个Conenction中生产者发送的消息传递给这个Connection中 的消费者
-		false, // no-local
-		// 列是否阻塞
-		false, // no-wait
-		nil,   // args
-	)
-	if err != nil {
-		fmt.Println(err)
-	}
+	get := <-r.consumer[key]
+	item := string(get.Body)
 
-	get := <-msg
-	return string(get.Body)
+	list := make(chan string)
+	go func() {
+		list <- item
+	}()
+	return list
 }
 
 // Destroy 断开channel 和 connection

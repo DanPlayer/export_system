@@ -7,11 +7,18 @@ application:
 
 # mysql数据库
 mysql:
-  master: "root:123456@tcp(127.0.0.1:3306)/qingwu?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+  # 主库
+  master: "root:root@tcp(127.0.0.1:3306)/local?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+  # 从库
+  slave: "root:root@tcp(127.0.0.1:3306)/local?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+  # 亚马逊主库
+  amazon: "root:root@tcp(127.0.0.1:3306)/local?parseTime=true&charset=utf8&loc=Asia%2FShanghai"
+  # 表前缀
+  masterTablePrefix: yb_
 
 # redis缓存
 redis:
-  addr: 127.0.0.1:6379
+  addr: 127.0.0.0:6379
   password:
   db: 0
 
