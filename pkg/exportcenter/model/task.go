@@ -59,3 +59,7 @@ func (m *Task) FindByID(id int64) (info Task, err error) {
 func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
 	return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
 }
+
+func (m *Task) UpdateDownloadUrlByID(id int64, url string) error {
+	return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("download_url", url).Error
+}

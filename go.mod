@@ -11,15 +11,19 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/goccy/go-json v0.10.2
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20220814095615-1584ca6acb88
+	github.com/panjf2000/ants/v2 v2.8.1
 	github.com/qiniu/go-sdk/v7 v7.13.0
 	github.com/rfyiamcool/go-timewheel v1.1.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/sony/sonyflake v1.0.0
 	github.com/spf13/viper v1.12.0
+	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
 	github.com/swaggo/gin-swagger v1.5.1
 	github.com/swaggo/swag v1.8.4
+	github.com/xuri/excelize/v2 v2.7.1
 	gorm.io/driver/mysql v1.4.3
 	gorm.io/gorm v1.25.2
 	gorm.io/plugin/dbresolver v1.4.1
@@ -28,19 +32,10 @@ require (
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4 // indirect
-	github.com/alibabacloud-go/debug v0.0.0-20190504072949-9472017b5c68 // indirect
-	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
-	github.com/alibabacloud-go/openapi-util v0.0.11 // indirect
-	github.com/alibabacloud-go/tea v1.1.17 // indirect
-	github.com/alibabacloud-go/tea-utils v1.4.5 // indirect
-	github.com/alibabacloud-go/tea-xml v1.1.2 // indirect
-	github.com/aliyun/credentials-go v1.1.2 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
-	github.com/clbanning/mxj/v2 v2.5.6 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -52,7 +47,6 @@ require (
 	github.com/go-openapi/spec v0.20.6 // indirect
 	github.com/go-openapi/swag v0.22.0 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -69,7 +63,6 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
-	github.com/panjf2000/ants/v2 v2.8.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
@@ -81,11 +74,9 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.3.0 // indirect
-	github.com/tjfoc/gmsm v1.3.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
-	github.com/xuri/excelize/v2 v2.7.1 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect

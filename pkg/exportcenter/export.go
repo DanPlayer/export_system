@@ -29,7 +29,7 @@ type ExportCenter struct {
 
 // Options 配置
 type Options struct {
-	Db            gorm.DB                     // gorm实例
+	Db            *gorm.DB                    // gorm实例
 	QueuePrefix   string                      // 队列前缀
 	Queue         Queue                       // 队列配置（必须配置）
 	SheetMaxRows  int64                       // 数据表最大行数
@@ -44,7 +44,7 @@ type Queue interface {
 	Create(key string) error            // 创建队列
 	Pop(key string) string              // 拉取数据
 	Push(key string, data string) error // 推送数据
-	Del(key string) error               // 删除队列
+	Destroy(key string) error           // 删除队列
 }
 
 func NewClient(options Options) (*ExportCenter, error) {
@@ -58,7 +58,7 @@ func NewClient(options Options) (*ExportCenter, error) {
 		options.GoroutineMax = 1
 	}
 
-	DbClient = &options.Db
+	DbClient = options.Db
 
 	// 自动创建任务表
 	err := DbClient.AutoMigrate(&model.Task{})
@@ -67,7 +67,7 @@ func NewClient(options Options) (*ExportCenter, error) {
 	}
 
 	return &ExportCenter{
-		Db:            &options.Db,
+		Db:            options.Db,
 		Queue:         options.Queue,
 		isUploadCloud: options.IsUploadCloud,
 		upload:        options.Upload,
@@ -75,10 +75,10 @@ func NewClient(options Options) (*ExportCenter, error) {
 }
 
 // CreateTask 创建导出任务
-func (ec *ExportCenter) CreateTask(key, name, description, source, destination, format string, count int64, options model.ExportOptions) error {
+func (ec *ExportCenter) CreateTask(key, name, description, source, destination, format string, count int64, options model.ExportOptions) (uint, error) {
 	marshal, err := json.Marshal(options)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// 创建导出任务
@@ -96,10 +96,10 @@ func (ec *ExportCenter) CreateTask(key, name, description, source, destination, 
 	}
 	err = task.Create()
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return task.ID, err
 }
 
 // PushData 推送导出数据到队列
@@ -128,6 +128,12 @@ func (ec *ExportCenter) CompleteTask(id int64) error {
 func (ec *ExportCenter) FailTask(id int64) error {
 	task := model.Task{}
 	return task.UpdateStatusByID(id, model.TaskStatusFail)
+}
+
+// UpdateTaskDownloadUrl 更新任务文件下载链接
+func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
+	task := model.Task{}
+	return task.UpdateDownloadUrlByID(id, url)
 }
 
 // ExportToExcelCSV 导出成excel表格，格式csv
@@ -235,15 +241,16 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 				continue
 			}
 
-			cell, err := excelize.CoordinatesToCellName(1, int(currentRowNum))
-			if err != nil {
-				return
-			}
-
 			var values []interface{}
 			err = json.Unmarshal([]byte(data), &values)
 			if err != nil {
+				fmt.Println(err)
 				continue
+			}
+
+			cell, err := excelize.CoordinatesToCellName(1, int(currentRowNum))
+			if err != nil {
+				return
 			}
 
 			// 写入excel文件
@@ -274,7 +281,7 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 			} else {
 				queueKey = fmt.Sprintf("%s_sheet%d", task.QueueKey, i)
 			}
-			_ = ec.Queue.Del(queueKey)
+			_ = ec.Queue.Destroy(queueKey)
 		}
 	} else {
 		// 任务失败
@@ -289,6 +296,11 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 	if ec.isUploadCloud {
 		// 将文件上传至云端，记录下载地址
 		err = ec.upload(filePath)
+		if err != nil {
+			return err
+		}
+
+		err = ec.UpdateTaskDownloadUrl(id, filePath)
 		if err != nil {
 			return err
 		}
