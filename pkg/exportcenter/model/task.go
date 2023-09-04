@@ -43,6 +43,10 @@ const (
 	TaskStatusAbandon   TaskStatus = 4
 )
 
+func (s TaskStatus) ParseInt() int {
+	return int(s)
+}
+
 func (m *Task) TableName() string {
 	return "task"
 }
@@ -57,7 +61,14 @@ func (m *Task) FindByID(id int64) (info Task, err error) {
 }
 
 func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
-	return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
+	if status == TaskStatusCompleted {
+		return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
+			"status":        status,
+			"progress_rate": 100,
+		}).Error
+	} else {
+		return exportcenter.DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
+	}
 }
 
 func (m *Task) UpdateDownloadUrlByID(id int64, url string) error {

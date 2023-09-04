@@ -85,7 +85,7 @@ func (ec *ExportCenter) CreateTask(key, name, description, source, destination, 
 	task := model.Task{
 		Name:          name,
 		Description:   description,
-		Status:        1,
+		Status:        model.TaskStatusWait.ParseInt(),
 		ProgressRate:  0,
 		Source:        source,
 		Destination:   destination,
@@ -124,6 +124,12 @@ func (ec *ExportCenter) CompleteTask(id int64) error {
 	return task.UpdateStatusByID(id, model.TaskStatusCompleted)
 }
 
+// ConsultTask 任务进行中
+func (ec *ExportCenter) ConsultTask(id int64) error {
+	task := model.Task{}
+	return task.UpdateStatusByID(id, model.TaskStatusConsult)
+}
+
 // FailTask 任务失败
 func (ec *ExportCenter) FailTask(id int64) error {
 	task := model.Task{}
@@ -140,6 +146,11 @@ func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
 func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) {
 	// 获取任务信息
 	task, err := ec.GetTask(id)
+	if err != nil {
+		return err
+	}
+
+	err = ec.ConsultTask(id)
 	if err != nil {
 		return err
 	}

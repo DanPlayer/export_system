@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"export_system/internal/domain/api/v1/export"
 	"export_system/internal/domain/api/v1/sms"
 	"export_system/internal/domain/api/v1/upload"
 	"export_system/internal/domain/api/v1/user"
@@ -53,6 +54,17 @@ func Setup() common.ModuleOption {
 				Route:   "/upload/open/excel",
 				Method:  "GET",
 				Handles: []gin.HandlerFunc{upload.OpenExcel},
+			},
+			// 导出系统
+			{
+				Route:   "/export/task/create",
+				Method:  "POST",
+				Handles: []gin.HandlerFunc{export.CreateTask},
+			},
+			{
+				Route:   "/export/task/data/push",
+				Method:  "POST",
+				Handles: []gin.HandlerFunc{export.PushExportData},
 			},
 		},
 	}
