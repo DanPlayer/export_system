@@ -166,8 +166,8 @@ func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
 	return task.UpdateDownloadUrlByID(id, url)
 }
 
-// ExportToExcelCSV 导出成excel表格，格式csv
-func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) {
+// ExportToExcel 导出成excel表格，格式
+func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
 	// 获取任务信息
 	task, err := ec.GetTask(id)
 	if err != nil {
@@ -250,7 +250,7 @@ func (ec *ExportCenter) ExportToExcelCSV(id int64, filePath string) (err error) 
 			// 增加数据到当前sheet并记录当前数据行索引，达到限制新增sheet，并重置当前sheet索引值
 			atomic.AddInt64(&count, 1) // 记录数据进度
 			atomic.AddInt64(&rowCount, 1)
-			if atomic.LoadInt64(&rowCount) > ec.sheetMaxRows || task.CountNum >= currentCount {
+			if currentRowNum > ec.sheetMaxRows || task.CountNum >= currentCount {
 				atomic.StoreInt64(&rowCount, 0)
 				_ = swMap[currentSheetIndex].Flush()
 				break

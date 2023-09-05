@@ -30,9 +30,9 @@ func PushExportData(key string, data []string) rtnerr.RtnError {
 	return nil
 }
 
-// ExportToExcelCSV 导出成excel表格，格式csv
-func ExportToExcelCSV(id int64, filePath string) error {
-	err := export.Client.ExportToExcelCSV(id, filePath)
+// ExportToExcel 导出成excel表格，格式csv
+func ExportToExcel(id int64, filePath string) error {
+	err := export.Client.ExportToExcel(id, filePath)
 	if err != nil {
 		return err
 	}

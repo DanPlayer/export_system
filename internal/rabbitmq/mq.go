@@ -70,9 +70,9 @@ func (r *RabbitMQ) Create(key string) error {
 	// 申请队列
 	q, err := r.channel.QueueDeclare(
 		queue,
-		false,
-		false,
 		true,
+		false,
+		false,
 		false,
 		nil,
 	)
@@ -151,12 +151,12 @@ func (r *RabbitMQ) Destroy(key string) error {
 	exchange := fmt.Sprintf("%s-exchange", key)
 	queue := fmt.Sprintf("%s-queue", key)
 
-	_, err := r.channel.QueueDelete(queue, true, false, true)
+	_, err := r.channel.QueueDelete(queue, false, false, true)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	err = r.channel.ExchangeDelete(exchange, true, false)
+	err = r.channel.ExchangeDelete(exchange, false, false)
 	if err != nil {
 		fmt.Println(err)
 		return err
