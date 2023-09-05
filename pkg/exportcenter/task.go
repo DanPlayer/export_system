@@ -21,6 +21,7 @@ type Task struct {
 	ExportOptions string       `gorm:"type:text;comment:'导出选项，可存储导出任务的配置信息（可选）'"`
 	QueueKey      string       `gorm:"type:varchar(255);comment:'队列key'"`
 	CountNum      int64        `gorm:"type:int(11);default:0;comment:'数据总数'"`
+	WriteNum      int64        `gorm:"type:int(11);default:0;comment:'已写入数据数量'"`
 	ErrNum        int64        `gorm:"type:int(11);default:0;comment:'错误数据数'"`
 	ErrLogUrl     string       `gorm:"type:text;comment:'错误日志地址'"`
 	DownloadUrl   string       `gorm:"type:text;comment:'文件下载地址'"`
@@ -64,6 +65,23 @@ func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
 	} else {
 		return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
 	}
+}
+
+func (m *Task) CompleteTaskByID(id int64, writeNum int64) error {
+	return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
+		"status":        TaskStatusCompleted,
+		"progress_rate": 100,
+		"write_num":     writeNum,
+	}).Error
+}
+
+func (m *Task) FailTaskByID(id int64, errNum, writeNum int64) error {
+	return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
+		"status":        TaskStatusFail,
+		"progress_rate": 100,
+		"err_num":       errNum,
+		"write_num":     writeNum,
+	}).Error
 }
 
 func (m *Task) UpdateDownloadUrlByID(id int64, url string) error {

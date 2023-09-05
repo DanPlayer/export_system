@@ -142,9 +142,9 @@ func (ec *ExportCenter) GetTask(id int64) (info Task, err error) {
 }
 
 // CompleteTask 完成任务
-func (ec *ExportCenter) CompleteTask(id int64) error {
+func (ec *ExportCenter) CompleteTask(id, writeNum int64) error {
 	task := Task{}
-	return task.UpdateStatusByID(id, TaskStatusCompleted)
+	return task.CompleteTaskByID(id, writeNum)
 }
 
 // ConsultTask 任务进行中
@@ -154,9 +154,9 @@ func (ec *ExportCenter) ConsultTask(id int64) error {
 }
 
 // FailTask 任务失败
-func (ec *ExportCenter) FailTask(id int64) error {
+func (ec *ExportCenter) FailTask(id int64, errNum, writeNum int64) error {
 	task := Task{}
-	return task.UpdateStatusByID(id, TaskStatusFail)
+	return task.FailTaskByID(id, errNum, writeNum)
 }
 
 // UpdateTaskDownloadUrl 更新任务文件下载链接
@@ -275,17 +275,26 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 				var values []interface{}
 				err = json.Unmarshal([]byte(data), &values)
 				if err != nil {
+					// 记录错误数据数
+					atomic.AddInt64(&errRowCount, 1)
 					fmt.Println(err)
 					continue
 				}
 
 				cell, err := excelize.CoordinatesToCellName(1, int(currentRowNum))
 				if err != nil {
-					break
+					// 记录错误数据数
+					atomic.AddInt64(&errRowCount, 1)
+					continue
 				}
 
 				// 写入excel文件
-				_ = swMap[currentSheetIndex].SetRow(cell, values)
+				err = swMap[currentSheetIndex].SetRow(cell, values)
+				if err != nil {
+					// 记录错误数据数
+					atomic.AddInt64(&errRowCount, 1)
+					continue
+				}
 			case <-time.After(5 * time.Second):
 				out = true
 				fmt.Println(fmt.Sprintf("%d行写入数据超时", currentRowNum))
@@ -318,13 +327,13 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 
 	// 任务进度完成（数据量达到总数包括错误数据），删除队列
 	if count >= task.CountNum {
-		err = ec.CompleteTask(id)
+		err = ec.CompleteTask(id, count)
 		if err != nil {
 			return err
 		}
 	} else {
 		// 任务失败
-		_ = ec.FailTask(id)
+		_ = ec.FailTask(id, errRowCount, count)
 	}
 
 	// 销毁队列
