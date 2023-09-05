@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/streadway/amqp"
 )
@@ -139,16 +140,32 @@ func (r *RabbitMQ) Push(key, data string) error {
 // Pop 消费队列
 func (r *RabbitMQ) Pop(key string) <-chan string {
 	list := make(chan string)
-	//接收消息
-	get, ok := <-r.consumer[key]
-	if !ok {
-		return list
-	}
-
-	item := string(get.Body)
+	var (
+		get  amqp.Delivery
+		item string
+	)
 
 	go func() {
-		list <- item
+		for {
+			done := false
+			select {
+			case get = <-r.consumer[key]:
+				item = string(get.Body)
+				if item != "" {
+					list <- item
+				}
+				done = true
+				break
+			case <-time.After(5 * time.Second):
+				_, ok := <-list
+				if !ok {
+					close(list)
+				}
+			}
+			if done {
+				break
+			}
+		}
 	}()
 	return list
 }

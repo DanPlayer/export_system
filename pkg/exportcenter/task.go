@@ -38,8 +38,8 @@ const (
 	TaskStatusWait      TaskStatus = 1
 	TaskStatusConsult   TaskStatus = 2
 	TaskStatusCompleted TaskStatus = 3
-	TaskStatusFail      TaskStatus = 3
-	TaskStatusAbandon   TaskStatus = 4
+	TaskStatusFail      TaskStatus = 4
+	TaskStatusAbandon   TaskStatus = 5
 )
 
 func (s TaskStatus) ParseInt() int {

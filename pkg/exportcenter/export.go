@@ -2,7 +2,6 @@ package exportcenter
 
 import (
 	"errors"
-	"export_system/internal/timewheel"
 	"fmt"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/ants/v2"
@@ -263,17 +262,8 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 		for {
 			currentRowNum := atomic.LoadInt64(&rowCount) + 1 // 当前行
 			currentCount := atomic.LoadInt64(&count)
-			// 增加数据到当前sheet并记录当前数据行索引，达到限制新增sheet，并重置当前sheet索引值
-			atomic.AddInt64(&count, 1) // 记录数据进度
-			atomic.AddInt64(&rowCount, 1)
-			if currentRowNum > ec.sheetMaxRows || currentCount >= task.CountNum {
-				atomic.StoreInt64(&rowCount, 0)
-				_ = swMap[currentSheetIndex].Flush()
-				break
-			}
 
-			timeout := timewheel.Client.After(5 * time.Second)
-
+			out := false
 			select {
 			case data := <-ec.PopData(queueKey):
 				if data == "" {
@@ -296,9 +286,23 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 
 				// 写入excel文件
 				_ = swMap[currentSheetIndex].SetRow(cell, values)
-			case <-timeout:
+			case <-time.After(5 * time.Second):
+				out = true
 				fmt.Println(fmt.Sprintf("%d行写入数据超时", currentRowNum))
-				continue
+				break
+			}
+
+			if out {
+				break
+			}
+
+			// 增加数据到当前sheet并记录当前数据行索引，达到限制新增sheet，并重置当前sheet索引值
+			atomic.AddInt64(&count, 1) // 记录数据进度
+			atomic.AddInt64(&rowCount, 1)
+			if currentRowNum > ec.sheetMaxRows || currentCount >= task.CountNum {
+				atomic.StoreInt64(&rowCount, 0)
+				_ = swMap[currentSheetIndex].Flush()
+				break
 			}
 		}
 
