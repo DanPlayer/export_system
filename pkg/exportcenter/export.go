@@ -167,7 +167,7 @@ func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
 }
 
 // ExportToExcel 导出成excel表格，格式
-func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
+func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key string) error) (err error) {
 	// 获取任务信息
 	task, err := ec.GetTask(id)
 	if err != nil {
@@ -201,6 +201,18 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
 	}
 
 	for i := 1; i <= sheetCount; i++ {
+		queueKey := ""
+		if ec.queuePrefix != "" {
+			queueKey = fmt.Sprintf("%s_%s_sheet%d", ec.queuePrefix, task.QueueKey, i)
+		} else {
+			queueKey = fmt.Sprintf("%s_sheet%d", task.QueueKey, i)
+		}
+
+		err = before(queueKey)
+		if err != nil {
+			return err
+		}
+
 		currentSheet := fmt.Sprintf("Sheet%d", i)
 
 		if i > 1 {
@@ -211,13 +223,6 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
 			}
 		}
 
-		// 生成标题
-		cell, _ := excelize.CoordinatesToCellName(1, 1)
-		err = f.SetSheetRow(currentSheet, cell, &options.Header)
-		if err != nil {
-			return err
-		}
-
 		// 获取写入器
 		sw, err := f.NewStreamWriter(currentSheet)
 		if err != nil {
@@ -225,6 +230,17 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
 			return err
 		}
 		swMap[int32(i)] = sw
+
+		var headers []interface{}
+		for _, s := range options.Header {
+			headers = append(headers, s)
+		}
+		// 生成标题
+		cell, _ := excelize.CoordinatesToCellName(1, 1)
+		err = sw.SetRow(cell, headers)
+		if err != nil {
+			return err
+		}
 	}
 
 	// 判断sheet的数据量是否达到限制，达到限制则增加数据到下一张sheet，设置当前数据增加的sheet索引值
@@ -250,7 +266,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string) (err error) {
 			// 增加数据到当前sheet并记录当前数据行索引，达到限制新增sheet，并重置当前sheet索引值
 			atomic.AddInt64(&count, 1) // 记录数据进度
 			atomic.AddInt64(&rowCount, 1)
-			if currentRowNum > ec.sheetMaxRows || task.CountNum >= currentCount {
+			if currentRowNum > ec.sheetMaxRows || currentCount >= task.CountNum {
 				atomic.StoreInt64(&rowCount, 0)
 				_ = swMap[currentSheetIndex].Flush()
 				break

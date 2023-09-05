@@ -41,6 +41,16 @@ func TestGenUid(t *testing.T) {
 }
 
 func TestTaskExport(t *testing.T) {
+	err := service.PushExportData("test55_sheet1", []string{
+		"[\"get1\",\"get1\",\"get1\"]",
+		"[\"get2\",\"get2\",\"get2\"]",
+		"[\"get3\",\"get3\",\"get3\"]",
+	})
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	er := service.ExportToExcel(1, "./test.xlsx")
 	if er != nil {
 		fmt.Println(er)

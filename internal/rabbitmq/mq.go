@@ -41,7 +41,7 @@ func NewRabbitMQ() *RabbitMQ {
 	rabbitmq.channel, err = rabbitmq.conn.Channel()
 	rabbitmq.failOnErr(err, "failed to open a channel")
 
-	rabbitmq.consumer = make(map[string]<-chan amqp.Delivery, 0)
+	rabbitmq.consumer = make(map[string]<-chan amqp.Delivery, 10)
 
 	return rabbitmq
 }
@@ -92,8 +92,11 @@ func (r *RabbitMQ) Create(key string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
-	// 创建消费者
+func (r *RabbitMQ) DeclareConsume(key string) error {
+	queue := fmt.Sprintf("%s-queue", key)
 	consumer, err := r.channel.Consume(
 		queue, // queue
 		// 用来区分多个消费者
@@ -110,10 +113,10 @@ func (r *RabbitMQ) Create(key string) error {
 	)
 	if err != nil {
 		fmt.Println(err)
+		return err
 	}
 
 	r.consumer[key] = consumer
-
 	return nil
 }
 
@@ -135,11 +138,15 @@ func (r *RabbitMQ) Push(key, data string) error {
 
 // Pop 消费队列
 func (r *RabbitMQ) Pop(key string) <-chan string {
+	list := make(chan string)
 	//接收消息
-	get := <-r.consumer[key]
+	get, ok := <-r.consumer[key]
+	if !ok {
+		return list
+	}
+
 	item := string(get.Body)
 
-	list := make(chan string)
 	go func() {
 		list <- item
 	}()

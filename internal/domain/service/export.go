@@ -2,8 +2,10 @@ package service
 
 import (
 	"export_system/internal/export"
+	"export_system/internal/rabbitmq"
 	"export_system/pkg/exportcenter"
 	"export_system/pkg/rtnerr"
+	"fmt"
 )
 
 // CreateExportTask 创建导出任务
@@ -32,7 +34,14 @@ func PushExportData(key string, data []string) rtnerr.RtnError {
 
 // ExportToExcel 导出成excel表格，格式csv
 func ExportToExcel(id int64, filePath string) error {
-	err := export.Client.ExportToExcel(id, filePath)
+	err := export.Client.ExportToExcel(id, filePath, func(key string) error {
+		// 重新开启消费者
+		err := rabbitmq.Client.DeclareConsume(key)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return nil
+	})
 	if err != nil {
 		return err
 	}
