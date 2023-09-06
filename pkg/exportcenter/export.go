@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/goccy/go-json"
 	"github.com/panjf2000/ants/v2"
+	"github.com/sirupsen/logrus"
 	"github.com/xuri/excelize/v2"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"gorm.io/gorm"
 	"math"
 	"os"
@@ -24,19 +26,19 @@ type ExportCenter struct {
 	poolMax       int
 	goroutineMax  int
 	isUploadCloud bool
-	upload        func(filePath string) error
+	upload        func(filePath string) (string, error)
 }
 
 // Options 配置
 type Options struct {
-	Db            *gorm.DB                    // gorm实例
-	QueuePrefix   string                      // 队列前缀
-	Queue         Queue                       // 队列配置（必须配置）
-	SheetMaxRows  int64                       // 数据表最大行数，用于生成队列key，可以用不同的队列同时并发写入数据，队列数量由【任务数据量】/【数据表最大行数】计算所得
-	PoolMax       int                         // 协程池最大数量
-	GoroutineMax  int                         // 协程最大数量
-	IsUploadCloud bool                        // 是否上传云端
-	Upload        func(filePath string) error // 上传接口
+	Db            *gorm.DB                              // gorm实例
+	QueuePrefix   string                                // 队列前缀
+	Queue         Queue                                 // 队列配置（必须配置）
+	SheetMaxRows  int64                                 // 数据表最大行数，用于生成队列key，可以用不同的队列同时并发写入数据，队列数量由【任务数据量】/【数据表最大行数】计算所得
+	PoolMax       int                                   // 协程池最大数量
+	GoroutineMax  int                                   // 协程最大数量
+	IsUploadCloud bool                                  // 是否上传云端
+	Upload        func(filePath string) (string, error) // 上传接口
 }
 
 // Queue 队列
@@ -165,16 +167,51 @@ func (ec *ExportCenter) UpdateTaskDownloadUrl(id int64, url string) error {
 	return task.UpdateDownloadUrlByID(id, url)
 }
 
+// UpdateTaskErrLogUrl 更新错误日志地址
+func (ec *ExportCenter) UpdateTaskErrLogUrl(id int64, url string) error {
+	task := Task{}
+	return task.UpdateErrLogUrlByID(id, url)
+}
+
 // ExportToExcel 导出成excel表格，格式
 func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key string) error) (err error) {
+	// 创建日志文件
+	getWd, _ := os.Getwd()
+	logPath := fmt.Sprintf("/log/export-system(task_id-%d).log", id)
+	logger := &lumberjack.Logger{
+		Filename:   getWd + logPath,
+		MaxSize:    500,  // 日志文件大小，单位是 MB
+		MaxBackups: 3,    // 最大过期日志保留个数
+		MaxAge:     28,   // 保留过期文件最大时间，单位 天
+		Compress:   true, // 是否压缩日志，默认是不压缩。这里设置为true，压缩日志
+	}
+	logrus.SetOutput(logger)
+
+	logrus.WithFields(logrus.Fields{
+		"task_id": id,
+		"time":    time.Now(),
+	}).Info("task start")
+
+	defer func() {
+		logrus.WithFields(logrus.Fields{
+			"task_id": id,
+			"time":    time.Now(),
+		}).Info("task end")
+		
+		// 保存日志地址
+		_ = ec.UpdateTaskErrLogUrl(id, logPath)
+	}()
+
 	// 获取任务信息
 	task, err := ec.GetTask(id)
 	if err != nil {
+		logrus.Error(err)
 		return err
 	}
 
 	err = ec.ConsultTask(id)
 	if err != nil {
+		logrus.Error(err)
 		return err
 	}
 
@@ -185,6 +222,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 	f := excelize.NewFile()
 	defer func() {
 		if err := f.Close(); err != nil {
+			logrus.Error(err)
 			fmt.Println(err)
 		}
 	}()
@@ -209,6 +247,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 
 		err = before(queueKey)
 		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 
@@ -218,6 +257,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 			// 创建sheet
 			_, err = f.NewSheet(fmt.Sprintf("Sheet%d", i))
 			if err != nil {
+				logrus.Error(err)
 				return err
 			}
 		}
@@ -238,6 +278,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 		cell, _ := excelize.CoordinatesToCellName(1, 1)
 		err = sw.SetRow(cell, headers)
 		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 	}
@@ -277,7 +318,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 				if err != nil {
 					// 记录错误数据数
 					atomic.AddInt64(&errRowCount, 1)
-					fmt.Println(err)
+					logrus.Error(err)
 					continue
 				}
 
@@ -297,7 +338,9 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 				}
 			case <-time.After(5 * time.Second):
 				out = true
-				fmt.Println(fmt.Sprintf("%d行写入数据超时", currentRowNum))
+				outErr := fmt.Sprintf("%d行写入数据超时", currentRowNum)
+				fmt.Println(outErr)
+				logrus.Error(outErr)
 				break
 			}
 
@@ -329,6 +372,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 	if count >= task.CountNum {
 		err = ec.CompleteTask(id, count)
 		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 	} else {
@@ -355,19 +399,28 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 
 	if ec.isUploadCloud {
 		// 将文件上传至云端，记录下载地址
-		err = ec.upload(filePath)
+		url, err := ec.upload(filePath)
 		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 
-		err = ec.UpdateTaskDownloadUrl(id, filePath)
+		err = ec.UpdateTaskDownloadUrl(id, url)
 		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 
 		// 删除本地文件
 		err = os.Remove(filePath)
 		if err != nil {
+			logrus.Error(err)
+			return err
+		}
+	} else {
+		err = ec.UpdateTaskDownloadUrl(id, filePath)
+		if err != nil {
+			logrus.Error(err)
 			return err
 		}
 	}

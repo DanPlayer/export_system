@@ -42,7 +42,7 @@ func TestGenUid(t *testing.T) {
 
 func TestTaskExport(t *testing.T) {
 	id, keys, err := service.CreateExportTask(
-		"test12580",
+		"test52000",
 		"test_name",
 		"test_file",
 		"测试使用",

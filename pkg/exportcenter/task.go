@@ -3,6 +3,7 @@ package exportcenter
 import (
 	"database/sql"
 	"gorm.io/gorm"
+	"time"
 )
 
 // Task 任务表
@@ -57,10 +58,10 @@ func (m *Task) FindByID(id int64) (info Task, err error) {
 }
 
 func (m *Task) UpdateStatusByID(id int64, status TaskStatus) error {
-	if status == TaskStatusCompleted {
+	if status == TaskStatusConsult {
 		return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
-			"status":        status,
-			"progress_rate": 100,
+			"status":     status,
+			"start_time": time.Now(),
 		}).Error
 	} else {
 		return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("status", status).Error
@@ -71,6 +72,7 @@ func (m *Task) CompleteTaskByID(id int64, writeNum int64) error {
 	return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
 		"status":        TaskStatusCompleted,
 		"progress_rate": 100,
+		"end_time":      time.Now(),
 		"write_num":     writeNum,
 	}).Error
 }
@@ -79,6 +81,7 @@ func (m *Task) FailTaskByID(id int64, errNum, writeNum int64) error {
 	return DbClient.Model(&m).Where("id = ?", id).UpdateColumns(map[string]interface{}{
 		"status":        TaskStatusFail,
 		"progress_rate": 100,
+		"end_time":      time.Now(),
 		"err_num":       errNum,
 		"write_num":     writeNum,
 	}).Error
@@ -86,4 +89,8 @@ func (m *Task) FailTaskByID(id int64, errNum, writeNum int64) error {
 
 func (m *Task) UpdateDownloadUrlByID(id int64, url string) error {
 	return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("download_url", url).Error
+}
+
+func (m *Task) UpdateErrLogUrlByID(id int64, url string) error {
+	return DbClient.Model(&m).Where("id = ?", id).UpdateColumn("err_log_url", url).Error
 }
