@@ -121,7 +121,7 @@ type InfoResponse struct {
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Success 200  {object} OthersInfoResponse
+// @Success 200  {object} InfoResponse
 // @Router /v1/user/info [get]
 func Info(c *gin.Context) {
 	userID := middleware.GetLoginUserID(c)

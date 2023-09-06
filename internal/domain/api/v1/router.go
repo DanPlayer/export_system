@@ -2,7 +2,6 @@ package v1
 
 import (
 	"export_system/internal/domain/api/v1/export"
-	"export_system/internal/domain/api/v1/upload"
 	"export_system/internal/domain/api/v1/user"
 	"export_system/internal/domain/common"
 	"export_system/internal/middleware"
@@ -38,16 +37,6 @@ func Setup() common.ModuleOption {
 				Route:   "/user/write/off",
 				Method:  "POST",
 				Handles: []gin.HandlerFunc{middleware.Auth(), user.WriteOffUser},
-			},
-			{ // 上传文件
-				Route:   "/upload/qiniu/token",
-				Method:  "GET",
-				Handles: []gin.HandlerFunc{middleware.Auth(), upload.QiniuUploadToken},
-			},
-			{
-				Route:   "/upload/open/excel",
-				Method:  "GET",
-				Handles: []gin.HandlerFunc{upload.OpenExcel},
 			},
 			// 导出系统
 			{
