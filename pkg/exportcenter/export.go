@@ -27,6 +27,7 @@ type ExportCenter struct {
 	goroutineMax  int
 	isUploadCloud bool
 	upload        func(filePath string) (string, error)
+	logRootPath   string
 }
 
 // Options 配置
@@ -39,6 +40,7 @@ type Options struct {
 	GoroutineMax  int                                   // 协程最大数量
 	IsUploadCloud bool                                  // 是否上传云端
 	Upload        func(filePath string) (string, error) // 上传接口
+	LogRootPath   string                                // 日志存储根目录
 }
 
 // Queue 队列
@@ -76,6 +78,7 @@ func NewClient(options Options) (*ExportCenter, error) {
 		goroutineMax:  options.GoroutineMax,
 		isUploadCloud: options.IsUploadCloud,
 		upload:        options.Upload,
+		logRootPath:   options.LogRootPath,
 	}, nil
 }
 
@@ -176,10 +179,9 @@ func (ec *ExportCenter) UpdateTaskErrLogUrl(id int64, url string) error {
 // ExportToExcel 导出成excel表格，格式
 func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key string) error) (err error) {
 	// 创建日志文件
-	getWd, _ := os.Getwd()
-	logPath := fmt.Sprintf("/log/export-system(task_id-%d).log", id)
+	logPath := fmt.Sprintf("/export_log/export-system(task_id-%d).log", id)
 	logger := &lumberjack.Logger{
-		Filename:   getWd + logPath,
+		Filename:   ec.logRootPath + logPath,
 		MaxSize:    500,  // 日志文件大小，单位是 MB
 		MaxBackups: 3,    // 最大过期日志保留个数
 		MaxAge:     28,   // 保留过期文件最大时间，单位 天
@@ -197,7 +199,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 			"task_id": id,
 			"time":    time.Now(),
 		}).Info("task end")
-		
+
 		// 保存日志地址
 		_ = ec.UpdateTaskErrLogUrl(id, logPath)
 	}()
