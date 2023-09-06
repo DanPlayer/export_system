@@ -6,6 +6,7 @@ import (
 	"export_system/pkg/exportcenter"
 	"fmt"
 	"os"
+	"time"
 )
 
 var Client = NewClient()
@@ -21,6 +22,7 @@ func NewClient() *exportcenter.ExportCenter {
 		PoolMax:      2,
 		GoroutineMax: 30,
 		LogRootPath:  fmt.Sprintf("%s/%s", getWd, "log"),
+		OutTime:      5 * time.Second,
 	})
 	if err != nil {
 		return nil

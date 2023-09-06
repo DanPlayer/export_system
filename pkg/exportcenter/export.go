@@ -28,6 +28,7 @@ type ExportCenter struct {
 	isUploadCloud bool
 	upload        func(filePath string) (string, error)
 	logRootPath   string
+	outTime       time.Duration
 }
 
 // Options 配置
@@ -41,6 +42,7 @@ type Options struct {
 	IsUploadCloud bool                                  // 是否上传云端
 	Upload        func(filePath string) (string, error) // 上传接口
 	LogRootPath   string                                // 日志存储根目录
+	OutTime       time.Duration                         // 超时时间
 }
 
 // Queue 队列
@@ -56,10 +58,13 @@ func NewClient(options Options) (*ExportCenter, error) {
 		return nil, errors.New("SheetMaxRows数据表最大行数必须配置大于0")
 	}
 	if options.PoolMax <= 0 {
-		options.PoolMax = 1
+		options.PoolMax = 1 // 默认最大协程池数量
 	}
 	if options.GoroutineMax <= 0 {
-		options.GoroutineMax = 1
+		options.GoroutineMax = 1 // 默认最大协程数量
+	}
+	if options.OutTime == 0 {
+		options.OutTime = 5 * time.Second // 默认超时时间
 	}
 
 	DbClient = options.Db
@@ -338,7 +343,7 @@ func (ec *ExportCenter) ExportToExcel(id int64, filePath string, before func(key
 					atomic.AddInt64(&errRowCount, 1)
 					continue
 				}
-			case <-time.After(5 * time.Second):
+			case <-time.After(ec.outTime):
 				out = true
 				outErr := fmt.Sprintf("%d行写入数据超时", currentRowNum)
 				fmt.Println(outErr)
