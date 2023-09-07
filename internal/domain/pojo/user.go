@@ -5,7 +5,6 @@ type UserInfo struct {
 	Uid      string `json:"userID"`   // 用户ID
 	NickName string `json:"nickName"` // 用户昵称
 	Avatar   string `json:"avatar"`   // 用户头像
-	Gender   int    `json:"gender"`   // 性别 1 - 男性 2 - 女性
 	Phone    string `json:"phone"`    // 手机号码
 }
 
@@ -14,7 +13,6 @@ type BackendUserInfo struct {
 	Phone       string `json:"phone"`       // 手机号
 	NickName    string `json:"nickName"`    // 用户昵称
 	Avatar      string `json:"avatar"`      // 用户头像
-	Gender      int    `json:"gender"`      // 性别 1 - 男性 2 - 女性
 	Forbidden   bool   `json:"forbidden"`   // 是否被禁用
 	CreatedTime int64  `json:"createdTime"` // 注册时间
 }

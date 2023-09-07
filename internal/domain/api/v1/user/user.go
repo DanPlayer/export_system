@@ -11,9 +11,8 @@ import (
 )
 
 type SmsLoginRequest struct {
-	Phone       string `json:"phone" validate:"required"` // 手机号
-	Code        string `json:"code" validate:"required"`  // 验证码
-	ChannelCode string `json:"channelCode"`               // 渠道标识
+	Phone string `json:"phone" validate:"required"` // 手机号
+	Code  string `json:"code" validate:"required"`  // 验证码
 }
 
 type SmsLoginResponse struct {
@@ -38,8 +37,7 @@ func SmsLogin(c *gin.Context) {
 		utils.OutErrorJson(c, err)
 		return
 	}
-	ip := utils.GetIP(c.Request)
-	token, complete, userId, err := service.SmsLogin(req.Phone, req.Code, req.ChannelCode, ip)
+	token, complete, userId, err := service.SmsLogin(req.Phone, req.Code)
 	if err != nil {
 		utils.OutErrorJson(c, err)
 		return
@@ -53,12 +51,8 @@ func SmsLogin(c *gin.Context) {
 }
 
 type UpdateUserInfoRequest struct {
-	NickName       string `json:"nickName"`       // 昵称
-	Avatar         string `json:"avatar"`         // 头像
-	BirthDay       string `json:"birthDay"`       // 生日 1990-01-01
-	Gender         int    `json:"gender"`         // 性别 1 - 男 2 - 女
-	MasterPosition string `json:"masterPosition"` // 主位置
-	SlavePosition  string `json:"slavePosition"`  // 副位置
+	NickName string `json:"nickName"` // 昵称
+	Avatar   string `json:"avatar"`   // 头像
 }
 
 type CheckUserProfileResponse struct {

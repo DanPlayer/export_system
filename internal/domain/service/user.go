@@ -14,7 +14,7 @@ import (
 )
 
 // SmsLogin 短信登录
-func SmsLogin(phone, code, channelCode, ipAddress string) (token string, profileComplete bool, userId string, err error) {
+func SmsLogin(phone, code string) (token string, profileComplete bool, userId string, err error) {
 	// 查询用户是否存在，不存在则是注册新账号
 	exist, info := CheckPhoneUser(phone)
 	if info.DeletedAt.Valid {
@@ -34,7 +34,7 @@ func SmsLogin(phone, code, channelCode, ipAddress string) (token string, profile
 		}
 	}
 
-	if info.NickName != "" && info.Avatar != "" && !info.BirthDay.IsZero() && info.Gender != 0 {
+	if info.NickName != "" && info.Avatar != "" {
 		profileComplete = true
 	}
 
@@ -118,7 +118,7 @@ func CheckUserProfile(userId string) bool {
 	if err != nil {
 		return false
 	}
-	if info.NickName == "" || info.Avatar == "" || info.BirthDay.IsZero() || info.Gender == 0 {
+	if info.NickName == "" || info.Avatar == "" {
 		return false
 	}
 	return true
@@ -154,7 +154,6 @@ func UserInfo(userID string) (userInfo pojo.UserInfo, err error) {
 		Uid:      info.Uid,
 		NickName: info.NickName,
 		Avatar:   info.Avatar,
-		Gender:   info.Gender,
 		Phone:    info.Phone,
 	}
 
@@ -176,7 +175,6 @@ func BackendSearchUsers(name, phone, channelCode string, page, size int) (users 
 			Phone:       list[i].Phone,
 			NickName:    list[i].NickName,
 			Avatar:      list[i].Avatar,
-			Gender:      list[i].Gender,
 			Forbidden:   list[i].Forbidden,
 			CreatedTime: list[i].CreatedAt.Unix(),
 		})
@@ -201,8 +199,6 @@ func BackendAddInnerUser(phone, nickName, avatar string, birthDay time.Time, gen
 		Phone:    phone,
 		NickName: nickName,
 		Avatar:   avatar,
-		BirthDay: birthDay,
-		Gender:   gender,
 	}
 	err := userModel.TxCreate(tx)
 	if err != nil {

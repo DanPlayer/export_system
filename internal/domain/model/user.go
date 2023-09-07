@@ -5,23 +5,17 @@ import (
 	"export_system/internal/domain/pojo"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"time"
 )
 
 // User 用户
 type User struct {
 	gorm.Model
-	Uid       string    `gorm:"type:varchar(80);unique;not null;comment:'用户唯一标识'"`              //用户唯一标识
-	Phone     string    `gorm:"type:varchar(255);unique;comment:'手机号'"`                         // 手机号
-	Password  string    `gorm:"type:varchar(255);comment:'密码'"`                                 // 密码
-	NickName  string    `gorm:"type:varchar(255);comment:'昵称'"`                                 // 昵称
-	Avatar    string    `gorm:"type:text;comment:'头像URL'"`                                      // 头像
-	BirthDay  time.Time `gorm:"type:timestamp;not null;default:CURRENT_TIMESTAMP;comment:'生日'"` // 生日
-	Gender    int       `gorm:"type:tinyint(1);default:1;comment:'性别 1 - 男性 2 - 女性'"`           // 性别 1 - 男性 2 - 女性
-	Balance   int64     `gorm:"type:bigint(20);not null;default:0;comment:'账户余额(单位：分)'"`        // 账户余额(单位：分)
-	Lat       float64   `gorm:"type:decimal(10,7);default:0;comment:'地图纬度'"`                    // 地图纬度
-	Lng       float64   `gorm:"type:decimal(10,7);default:0;comment:'地图经度'"`                    // 地图经度
-	Forbidden bool      `gorm:"type:tinyint(1);default:0;comment:'是否禁用 0-正常， 1-被禁用'"`           // 是否禁用 0-正常， 1-被禁用
+	Uid       string `gorm:"type:varchar(80);unique;not null;comment:'用户唯一标识'"`    //用户唯一标识
+	Phone     string `gorm:"type:varchar(255);unique;comment:'手机号'"`               // 手机号
+	Password  string `gorm:"type:varchar(255);comment:'密码'"`                       // 密码
+	NickName  string `gorm:"type:varchar(255);comment:'昵称'"`                       // 昵称
+	Avatar    string `gorm:"type:text;comment:'头像URL'"`                            // 头像
+	Forbidden bool   `gorm:"type:tinyint(1);default:0;comment:'是否禁用 0-正常， 1-被禁用'"` // 是否禁用 0-正常， 1-被禁用
 }
 
 func (m *User) TableName() string {
@@ -64,12 +58,6 @@ func (m *User) setMap() map[string]interface{} {
 	}
 	if m.Avatar != "" {
 		upMap["avatar"] = m.Avatar
-	}
-	if !m.BirthDay.IsZero() {
-		upMap["birth_day"] = m.BirthDay
-	}
-	if m.Gender != 0 {
-		upMap["gender"] = m.Gender
 	}
 	return upMap
 }
