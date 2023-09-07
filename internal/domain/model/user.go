@@ -10,12 +10,14 @@ import (
 // User 用户
 type User struct {
 	gorm.Model
-	Uid       string `gorm:"type:varchar(80);unique;not null;comment:'用户唯一标识'"`    //用户唯一标识
-	Phone     string `gorm:"type:varchar(255);unique;comment:'手机号'"`               // 手机号
-	Password  string `gorm:"type:varchar(255);comment:'密码'"`                       // 密码
-	NickName  string `gorm:"type:varchar(255);comment:'昵称'"`                       // 昵称
-	Avatar    string `gorm:"type:text;comment:'头像URL'"`                            // 头像
-	Forbidden bool   `gorm:"type:tinyint(1);default:0;comment:'是否禁用 0-正常， 1-被禁用'"` // 是否禁用 0-正常， 1-被禁用
+	Uid          string `gorm:"type:varchar(80);unique;not null;comment:'用户唯一标识'"`             //用户唯一标识
+	Phone        string `gorm:"type:varchar(255);unique;comment:'手机号'"`                        // 手机号
+	Password     string `gorm:"type:varchar(255);comment:'密码'"`                                // 密码
+	NickName     string `gorm:"type:varchar(255);comment:'昵称'"`                                // 昵称
+	Avatar       string `gorm:"type:text;comment:'头像URL'"`                                     // 头像
+	Forbidden    bool   `gorm:"type:tinyint(1);default:0;comment:'是否禁用 0-正常， 1-被禁用'"`          // 是否禁用 0-正常， 1-被禁用
+	AccessKey    string `gorm:"type:varchar(255);index:idx_access_key_secret;comment:'密令Key'"` // 密令Key
+	AccessSecret string `gorm:"type:text;index:idx_access_key_secret;comment:'密令'"`            // 密令
 }
 
 func (m *User) TableName() string {
@@ -24,6 +26,19 @@ func (m *User) TableName() string {
 
 func (m *User) InfoByIncludeDeleted(phone string) (info User, err error) {
 	err = db.MasterClient.Model(&m).Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).Where("phone = ?", phone).First(&info).Error
+	return
+}
+
+func (m *User) InfoByKeyIncludeDeleted(key string) (info User, err error) {
+	err = db.MasterClient.Model(&m).Unscoped().Clauses(clause.Locking{Strength: "UPDATE"}).Where("access_key = ?", key).First(&info).Error
+	return
+}
+
+func (m *User) InfoByAccess(key, secret string) (info User, err error) {
+	err = db.MasterClient.Model(&m).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("access_key = ?", key).
+		Where("access_secret = ?", secret).
+		First(&info).Error
 	return
 }
 

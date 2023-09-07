@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"export_system/internal/domain/admin"
 	v1 "export_system/internal/domain/api/v1"
 	"export_system/internal/domain/common"
 	"export_system/internal/domain/crontab"
@@ -14,6 +15,7 @@ func Registry() common.ModuleOptionList {
 		docs.Setup(),
 		tool.Setup(),
 		v1.Setup(),
+		admin.Setup(),
 		crontab.Setup(),
 	}
 }

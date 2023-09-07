@@ -68,9 +68,6 @@ definitions:
       avatar:
         description: 用户头像
         type: string
-      gender:
-        description: 性别 1 - 男性 2 - 女性
-        type: integer
       nickName:
         description: 用户昵称
         type: string
@@ -81,11 +78,29 @@ definitions:
         description: 用户ID
         type: string
     type: object
+  user.RegisterRequest:
+    properties:
+      avatar:
+        description: 头像
+        type: string
+      nick_name:
+        description: 昵称
+        type: string
+      password:
+        description: 密码
+        type: string
+      phone:
+        description: 手机号
+        type: string
+    required:
+    - nick_name
+    - password
+    - phone
+    type: object
+  user.RegisterResponse:
+    type: object
   user.SmsLoginRequest:
     properties:
-      channelCode:
-        description: 渠道标识
-        type: string
       code:
         description: 验证码
         type: string
@@ -114,6 +129,28 @@ info:
   title: qingwu
   version: "1.0"
 paths:
+  /admin/user/register:
+    post:
+      consumes:
+      - application/json
+      description: 用户添加
+      parameters:
+      - description: 用户添加参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.RegisterResponse'
+      summary: 用户添加
+      tags:
+      - 后台管理-用户
   /tool/ping:
     get:
       consumes:

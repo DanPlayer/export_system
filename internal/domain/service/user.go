@@ -5,11 +5,16 @@ import (
 	"export_system/internal/db"
 	"export_system/internal/domain/model"
 	"export_system/internal/domain/pojo"
+	"export_system/internal/domain/rtn"
+	"export_system/internal/hashids"
 	"export_system/internal/middleware"
 	"export_system/internal/rdb"
+	"export_system/pkg/rtnerr"
 	"export_system/utils"
 	"gorm.io/gorm"
 	"log"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -111,6 +116,19 @@ func CheckPhoneUser(phone string) (bool, model.User) {
 	return true, info
 }
 
+// CheckAccessKeyUser 检测用户ak是否存在
+func CheckAccessKeyUser(key string) (bool, model.User) {
+	userModel := model.User{}
+	info, err := userModel.InfoByKeyIncludeDeleted(key)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println(err)
+		}
+		return false, model.User{}
+	}
+	return true, info
+}
+
 // CheckUserProfile 检测用户资料是否完整
 func CheckUserProfile(userId string) bool {
 	userModel := model.User{}
@@ -182,28 +200,60 @@ func BackendSearchUsers(name, phone, channelCode string, page, size int) (users 
 	return
 }
 
-// BackendAddInnerUser 新增内部用户
-func BackendAddInnerUser(phone, nickName, avatar string, birthDay time.Time, gender int) error {
+// BackendAddUser 新增用户
+func BackendAddUser(phone, password, nickName, avatar string) rtnerr.RtnError {
 	// 查询用户是否存在，不存在则是注册新账号
 	exist, _ := CheckPhoneUser(phone)
 	if exist {
-		return errors.New("该号码已经注册了")
+		return rtn.UserExistError
 	}
 
 	tx := db.MasterClient.Begin()
 	// 生成TIMUserID
-	userID := utils.GetUid()
-	// 创建新用户信息
-	userModel := model.User{
-		Uid:      userID,
-		Phone:    phone,
-		NickName: nickName,
-		Avatar:   avatar,
+	uid := utils.GetUid()
+
+	split := strings.Split(uid, "")
+	var uidInt []int
+	for _, s := range split {
+		i, _ := strconv.Atoi(s)
+		uidInt = append(uidInt, i)
 	}
-	err := userModel.TxCreate(tx)
+
+	// 生成用户的AccessKey
+	key, err := hashids.Client.Encode(uidInt)
 	if err != nil {
 		tx.Rollback()
-		return err
+		return rtn.UserAkExistError
+	}
+
+	// 查询用户的key是否已存在
+	exist, _ = CheckAccessKeyUser(key)
+	if exist {
+		tx.Rollback()
+		return rtn.UserAkExistError
+	}
+
+	// 生成AccessSecret，并加密
+	secret := utils.RandStr(64)
+	secret = utils.MD5String(secret)
+
+	// 加密密码
+	password = utils.MD5String(password)
+
+	// 创建新用户信息
+	userModel := model.User{
+		Uid:          uid,
+		Phone:        phone,
+		Password:     password,
+		NickName:     nickName,
+		Avatar:       avatar,
+		AccessKey:    key,
+		AccessSecret: secret,
+	}
+	err = userModel.TxCreate(tx)
+	if err != nil {
+		tx.Rollback()
+		return rtnerr.New(err)
 	}
 	// 事务提交
 	tx.Commit()

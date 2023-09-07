@@ -15,6 +15,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/user/register": {
+            "post": {
+                "description": "用户添加",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "后台管理-用户"
+                ],
+                "summary": "用户添加",
+                "parameters": [
+                    {
+                        "description": "用户添加参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.RegisterResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tool/ping": {
             "get": {
                 "consumes": [
@@ -350,10 +384,6 @@ const docTemplate = `{
                     "description": "用户头像",
                     "type": "string"
                 },
-                "gender": {
-                    "description": "性别 1 - 男性 2 - 女性",
-                    "type": "integer"
-                },
                 "nickName": {
                     "description": "用户昵称",
                     "type": "string"
@@ -368,6 +398,35 @@ const docTemplate = `{
                 }
             }
         },
+        "user.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "nick_name",
+                "password",
+                "phone"
+            ],
+            "properties": {
+                "avatar": {
+                    "description": "头像",
+                    "type": "string"
+                },
+                "nick_name": {
+                    "description": "昵称",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "手机号",
+                    "type": "string"
+                }
+            }
+        },
+        "user.RegisterResponse": {
+            "type": "object"
+        },
         "user.SmsLoginRequest": {
             "type": "object",
             "required": [
@@ -375,10 +434,6 @@ const docTemplate = `{
                 "phone"
             ],
             "properties": {
-                "channelCode": {
-                    "description": "渠道标识",
-                    "type": "string"
-                },
                 "code": {
                     "description": "验证码",
                     "type": "string"
