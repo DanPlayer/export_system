@@ -69,7 +69,7 @@ func OutUserWriteOff(c *gin.Context) {
 // OutAuthNeedError 需要登录
 func OutAuthNeedError(c *gin.Context) {
 	c.JSON(200, gin.H{
-		"rtn": rtn.AuthNeedError,
+		"rtn": rtn.AuthNeedLoginError,
 		"msg": "该功能需要登录!",
 	})
 }

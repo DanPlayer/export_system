@@ -292,3 +292,56 @@ func WriteOffUser(userID string) error {
 	tx.Commit()
 	return nil
 }
+
+// CheckAccessAuth 检查用户AK权限
+func CheckAccessAuth(key, secret string) (bool, model.User) {
+	// 加密secret
+	secret = utils.MD5String(secret)
+
+	userModel := model.User{}
+	info, err := userModel.InfoByAccess(key, secret)
+	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Println(err)
+		}
+		return false, model.User{}
+	}
+	return true, info
+}
+
+// GenerateAccessToken 生成AccessToken
+func GenerateAccessToken() (string, int64, error) {
+	uid := utils.GetUid()
+	randStr := utils.RandStr(12)
+	token := utils.MD5String(uid + randStr + strconv.FormatInt(time.Now().Unix(), 10))
+
+	accessTokenRdb := rdb.AccessToken{
+		Token: token,
+	}
+	err := accessTokenRdb.Set()
+	if err != nil {
+		return "", 0, err
+	}
+
+	return token, rdb.AccessTokenExpireTime, nil
+}
+
+// RefreshAccessToken 刷新AccessToken
+func RefreshAccessToken(token string) (string, int64, rtnerr.RtnError) {
+	accessTokenRdb := rdb.AccessToken{
+		Token: token,
+	}
+	get, err := accessTokenRdb.Get()
+	if err != nil {
+		return "", 0, rtnerr.New(err)
+	}
+	if get == "" {
+		return "", 0, rtn.AuthTokenError
+	}
+	// 刷新
+	accessToken, expire, err := GenerateAccessToken()
+	if err != nil {
+		return "", 0, rtnerr.New(err)
+	}
+	return accessToken, expire, nil
+}
