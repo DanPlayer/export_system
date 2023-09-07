@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"export_system/internal/domain/rtn"
 	"export_system/utils"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -81,8 +82,6 @@ func Auth() gin.HandlerFunc {
 		if len(token) > 0 {
 			info, err := ParseToken(token)
 			if err != nil || info.UserID == "" {
-				if err != nil {
-				}
 				utils.OutAuthOutdatedError(c)
 				c.Abort()
 				return
@@ -93,6 +92,26 @@ func Auth() gin.HandlerFunc {
 			c.Set("avatar", info.Avatar)
 			c.Set("token", token)
 			c.Set("phone", info.Phone)
+			c.Next()
+			return
+		}
+		utils.OutAuthNeedError(c)
+		c.Abort()
+		return
+	}
+}
+
+// AccessAuth 授权中心权限检查
+func AccessAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		token := GetToken(c)
+		if len(token) > 0 {
+			info, err := ParseAccessToken(token)
+			if err != nil || info.Token == "" {
+				utils.OutRtnErrorJson(c, rtn.AuthTokenError)
+				c.Abort()
+				return
+			}
 			c.Next()
 			return
 		}

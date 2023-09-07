@@ -37,3 +37,22 @@ func MakeToken(phone string, expired time.Time) (tokenStr string, err error) {
 	tokenStr, err = token.SignedString([]byte("yourshines%2#@sa"))
 	return
 }
+
+// ParseAccessToken 验证token密钥
+func ParseAccessToken(token string) (info rdb.AccessToken, err error) {
+	tokenRdb := rdb.AccessToken{Token: token}
+	get, err := tokenRdb.Get()
+	if err != nil {
+		return
+	}
+	if get == "" {
+		err = errors.New("token验证失败")
+		return
+	}
+	err = json.Unmarshal([]byte(get), &info)
+	if err != nil {
+		return
+	}
+
+	return
+}

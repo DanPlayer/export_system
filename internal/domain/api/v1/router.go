@@ -54,12 +54,12 @@ func Setup() common.ModuleOption {
 			{
 				Route:   "/export/task/create",
 				Method:  "POST",
-				Handles: []gin.HandlerFunc{export.CreateTask},
+				Handles: []gin.HandlerFunc{middleware.AccessAuth(), export.CreateTask},
 			},
 			{
 				Route:   "/export/task/data/push",
 				Method:  "POST",
-				Handles: []gin.HandlerFunc{export.PushExportData},
+				Handles: []gin.HandlerFunc{middleware.AccessAuth(), export.PushExportData},
 			},
 		},
 	}
