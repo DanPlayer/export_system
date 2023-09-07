@@ -32,7 +32,12 @@ func PushExportData(key string, data []string) rtnerr.RtnError {
 	return nil
 }
 
-// ExportToExcel 导出成excel表格，格式csv
+// StartTask 开启导出任务
+func StartTask(id int64) {
+	export.Client.StartTask(id)
+}
+
+// ExportToExcel 导出成excel表格
 func ExportToExcel(id int64, filePath string) error {
 	err := export.Client.ExportToExcel(id, filePath, func(key string) error {
 		// 重新开启消费者

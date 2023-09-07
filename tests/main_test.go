@@ -118,3 +118,45 @@ func StructToSlice(f model.ListingDesc) []string {
 	}
 	return ss
 }
+
+func TestSimpleTaskExport(t *testing.T) {
+	id, keys, err := service.CreateExportTask(
+		"test_mq",
+		"test_name",
+		"test_file",
+		"测试使用",
+		"本地处理的数据",
+		"本地处理的数据",
+		"xlsx",
+		3,
+		[]string{
+			"header1",
+			"header2",
+			"header3",
+		},
+	)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	for _, key := range keys {
+		data := []string{
+			"[\"get1\",\"get1\",\"get1\"]",
+			"[\"get1\",\"get1\",\"get1\"]",
+			"[\"get1\",\"get1\",\"get1\"]",
+		}
+		err := service.PushExportData(key, data)
+		if err != nil {
+			return
+		}
+	}
+
+	service.StartTask(int64(id))
+
+	er := service.ExportToExcel(int64(id), "./test.xlsx")
+	if er != nil {
+		return
+	}
+}
