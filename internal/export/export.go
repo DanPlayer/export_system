@@ -3,8 +3,8 @@ package export
 import (
 	"export_system/internal/db"
 	"export_system/internal/rabbitmq"
-	"export_system/pkg/exportcenter"
 	"fmt"
+	"github.com/DanPlayer/exportcenter"
 	"os"
 	"time"
 )

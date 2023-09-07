@@ -3,9 +3,9 @@ package service
 import (
 	"export_system/internal/export"
 	"export_system/internal/rabbitmq"
-	"export_system/pkg/exportcenter"
 	"export_system/pkg/rtnerr"
 	"fmt"
+	"github.com/DanPlayer/exportcenter"
 )
 
 // CreateExportTask 创建导出任务
