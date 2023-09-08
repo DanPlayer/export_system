@@ -31,8 +31,8 @@ require (
 )
 
 require (
-	github.com/DanPlayer/exportcenter v1.0.1 // indirect
+	github.com/DanPlayer/exportcenter v1.0.2
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230731060429-6ed8bf011875
-	github.com/speps/go-hashids/v2 v2.0.1 // indirect
+	github.com/speps/go-hashids/v2 v2.0.1
 	golang.org/x/net v0.15.0 // indirect
 )
