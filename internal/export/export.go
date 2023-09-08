@@ -18,7 +18,7 @@ func NewClient() *exportcenter.ExportCenter {
 		Db:           db.MasterClient,
 		QueuePrefix:  "yb_",
 		Queue:        rabbitmq.Client,
-		SheetMaxRows: 500000,
+		SheetMaxRows: 50000,
 		PoolMax:      2,
 		GoroutineMax: 30,
 		LogRootPath:  fmt.Sprintf("%s/%s", getWd, "log"),

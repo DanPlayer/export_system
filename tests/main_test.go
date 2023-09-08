@@ -10,6 +10,7 @@ import (
 	"log"
 	"reflect"
 	"strconv"
+	"sync"
 	"testing"
 )
 
@@ -44,7 +45,7 @@ func TestGenUid(t *testing.T) {
 }
 
 func TestTaskExport(t *testing.T) {
-	count := int64(500000)
+	count := int64(269276)
 	_, keys, err := service.CreateExportTask(
 		"test_listing_desc",
 		"test_name",
@@ -72,38 +73,50 @@ func TestTaskExport(t *testing.T) {
 		return
 	}
 
+	wg := sync.WaitGroup{}
+
 	// 查询出50w左右的数据用于导入
 	listingDescModel := model.ListingDesc{}
-	limit := 10000
-	did := 0
-	for i := 0; i < 50; i++ {
-		descs, err := listingDescModel.ListRangeByID(did, limit)
-		if err != nil {
-			break
-		}
-		if len(descs) == 0 {
-			break
-		}
-		did = int(descs[len(descs)-1].ID)
-		for _, desc := range descs {
-			s := StructToSlice(desc)
-			bytes, err := json.Marshal(s)
-			if err != nil {
-				continue
+	for _, key := range keys {
+		wg.Add(1)
+		go func(key string) {
+			limit := 1000
+			did := 0
+			for i := 0; i < 50; i++ {
+				descs, err := listingDescModel.ListRangeByID(did, limit)
+				if err != nil {
+					break
+				}
+				if len(descs) == 0 {
+					break
+				}
+				did = int(descs[len(descs)-1].ID)
+				for _, desc := range descs {
+					s := StructToSlice(desc)
+					bytes, err := json.Marshal(s)
+					if err != nil {
+						continue
+					}
+					err = service.PushExportData(key, []string{
+						string(bytes),
+					})
+					if err != nil {
+						fmt.Println(err)
+						continue
+					}
+				}
 			}
-			err = service.PushExportData(keys[0], []string{
-				string(bytes),
-			})
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-		}
+			wg.Done()
+		}(key)
 	}
+	wg.Wait()
 }
 
 func TestExport(t *testing.T) {
-	er := service.ExportToExcel(int64(68), "./test_listing_desc.xlsx")
+	id := int64(96)
+	service.StartTask(id)
+
+	er := service.ExportToExcel(id, "./test_listing_desc.xlsx")
 	if er != nil {
 		fmt.Println(er)
 		return
