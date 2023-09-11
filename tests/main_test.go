@@ -44,12 +44,12 @@ func TestGenUid(t *testing.T) {
 	}
 }
 
-func BenchmarkName(b *testing.B) {
+func BenchmarkExportExcel(b *testing.B) {
 	count := int64(269276)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		var ids []uint
-		for i := 0; i < 10; i++ {
+		for i := 0; i < 5; i++ {
 			id := CreateTestTask(fmt.Sprintf("test_listing_desc_%d", i), count)
 			ids = append(ids, id)
 		}
