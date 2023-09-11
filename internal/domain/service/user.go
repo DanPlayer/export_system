@@ -18,6 +18,54 @@ import (
 	"time"
 )
 
+func Login(phone, password string) (token, uid string, rtnErr rtnerr.RtnError) {
+	// 查询用户是否存在，不存在则是注册新账号
+	exist, info := CheckPhoneUser(phone)
+	if !exist || info.DeletedAt.Valid {
+		rtnErr = rtn.UserExistError
+		return
+	}
+
+	if info.Password != utils.MD5String(password) {
+		rtnErr = rtn.UserLoginError
+		return
+	}
+
+	uid = info.Uid
+
+	// 生成登录token
+	var err error
+	token, err = middleware.MakeToken(phone, utils.Now().Add(7*24*time.Hour))
+	if err != nil {
+		rtnErr = rtnerr.New(err)
+		return
+	}
+	tokenRdb := rdb.Token{
+		Token:    token,
+		UserID:   info.Uid,
+		NickName: info.NickName,
+		Avatar:   info.Avatar,
+		Phone:    phone,
+	}
+	err = tokenRdb.Set()
+	if err != nil {
+		rtnErr = rtnerr.New(err)
+		return
+	}
+
+	// 存储用户token关系缓存
+	userTokenRdb := rdb.UserToken{UserID: info.Uid, Token: token}
+	oldToken, _ := userTokenRdb.Get()
+	// 删除旧登录态
+	if oldToken != "" {
+		oldTokenRdb := rdb.Token{Token: oldToken}
+		_ = oldTokenRdb.Del()
+	}
+	_ = userTokenRdb.Set()
+
+	return
+}
+
 // SmsLogin 短信登录
 func SmsLogin(phone, code string) (token string, profileComplete bool, userId string, err error) {
 	// 查询用户是否存在，不存在则是注册新账号

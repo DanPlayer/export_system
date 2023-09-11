@@ -1,4 +1,38 @@
 definitions:
+  auth.AccessTokenRequest:
+    properties:
+      access_key:
+        description: 密钥key
+        type: string
+      access_secret:
+        description: 密钥
+        type: string
+    required:
+    - access_key
+    - access_secret
+    type: object
+  auth.AccessTokenResponse:
+    properties:
+      expire_time:
+        type: integer
+      token:
+        type: string
+    type: object
+  auth.RefreshAccessTokenRequest:
+    properties:
+      token:
+        description: 已获取的token
+        type: string
+    required:
+    - token
+    type: object
+  auth.RefreshAccessTokenResponse:
+    properties:
+      expire_time:
+        type: integer
+      token:
+        type: string
+    type: object
   export.CreateTaskRequest:
     properties:
       count:
@@ -78,6 +112,27 @@ definitions:
         description: 用户ID
         type: string
     type: object
+  user.LoginRequest:
+    properties:
+      password:
+        description: 密码
+        type: string
+      phone:
+        description: 手机号
+        type: string
+    required:
+    - password
+    - phone
+    type: object
+  user.LoginResponse:
+    properties:
+      token:
+        description: 鉴权
+        type: string
+      uid:
+        description: 用户ID
+        type: string
+    type: object
   user.RegisterRequest:
     properties:
       avatar:
@@ -96,8 +151,6 @@ definitions:
     - nick_name
     - password
     - phone
-    type: object
-  user.RegisterResponse:
     type: object
   user.SmsLoginRequest:
     properties:
@@ -119,7 +172,7 @@ definitions:
       token:
         description: 验证签名
         type: string
-      userID:
+      uid:
         description: 用户ID
         type: string
     type: object
@@ -146,8 +199,6 @@ paths:
       responses:
         "200":
           description: OK
-          schema:
-            $ref: '#/definitions/user.RegisterResponse'
       summary: 用户添加
       tags:
       - 后台管理-用户
@@ -177,6 +228,50 @@ paths:
       summary: 获取当前服务真实出口IP
       tags:
       - tool
+  /v1/auth/token:
+    post:
+      consumes:
+      - application/json
+      description: 获取AccessToken
+      parameters:
+      - description: 参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.AccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.AccessTokenResponse'
+      summary: 获取AccessToken
+      tags:
+      - 授权中心
+  /v1/auth/token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 刷新AccessToken
+      parameters:
+      - description: 参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshAccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.RefreshAccessTokenResponse'
+      summary: 刷新AccessToken
+      tags:
+      - 授权中心
   /v1/export/task/create:
     post:
       consumes:
@@ -268,13 +363,35 @@ paths:
       summary: 当前用户的信息
       tags:
       - 用户
+  /v1/user/login:
+    post:
+      consumes:
+      - application/json
+      description: 用户普通登录
+      parameters:
+      - description: 用户登录参数
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/user.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LoginResponse'
+      summary: 用户普通登录
+      tags:
+      - 用户
   /v1/user/sms/login:
     post:
       consumes:
       - application/json
-      description: 用户登录
+      description: 用户短信登录
       parameters:
-      - description: 用户登录参数
+      - description: 参数
         in: body
         name: body
         required: true
@@ -287,7 +404,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/user.SmsLoginResponse'
-      summary: 用户登录
+      summary: 用户短信登录
       tags:
       - 用户
   /v1/user/write/off:

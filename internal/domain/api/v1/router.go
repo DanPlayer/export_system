@@ -15,6 +15,11 @@ func Setup() common.ModuleOption {
 		Name: "v1",
 		ChildList: []common.ModuleChild{
 			{
+				Route:   "/user/login",
+				Method:  "POST",
+				Handles: []gin.HandlerFunc{user.Login},
+			},
+			{
 				Route:   "/user/sms/login",
 				Method:  "POST",
 				Handles: []gin.HandlerFunc{user.SmsLogin},

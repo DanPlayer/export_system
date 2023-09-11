@@ -11,12 +11,11 @@ import (
 const TokenKey = "token:"
 
 type Token struct {
-	UserID    string `json:"user_id"`
-	TIMUserID string `json:"tim_user_id"`
-	Phone     string `json:"phone"`
-	Token     string `json:"token"`
-	NickName  string `json:"nick_name"`
-	Avatar    string `json:"avatar"`
+	UserID   string `json:"user_id"`
+	Phone    string `json:"phone"`
+	Token    string `json:"token"`
+	NickName string `json:"nick_name"`
+	Avatar   string `json:"avatar"`
 }
 
 func (rs *Token) Get() (string, error) {
@@ -27,7 +26,7 @@ func (rs *Token) Get() (string, error) {
 }
 
 func (rs *Token) Set() error {
-	if rs.UserID == "" || rs.TIMUserID == "" || len(rs.Token) <= 0 {
+	if rs.UserID == "" || len(rs.Token) <= 0 {
 		return errors.New("token缓存的必要属性没有设置")
 	}
 	bytes, e := json.Marshal(rs)

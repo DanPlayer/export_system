@@ -44,10 +44,31 @@ func TestGenUid(t *testing.T) {
 	}
 }
 
-func TestTaskExport(t *testing.T) {
+func BenchmarkName(b *testing.B) {
 	count := int64(269276)
-	_, keys, err := service.CreateExportTask(
-		"test_listing_desc",
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var ids []uint
+		for i := 0; i < 10; i++ {
+			id := CreateTestTask(fmt.Sprintf("test_listing_desc_%d", i), count)
+			ids = append(ids, id)
+		}
+
+		wg := sync.WaitGroup{}
+		for _, id := range ids {
+			wg.Add(1)
+			go func(id uint) {
+				Export(int64(id))
+				wg.Done()
+			}(id)
+		}
+		wg.Wait()
+	}
+}
+
+func CreateTestTask(taskKey string, count int64) uint {
+	id, keys, err := service.CreateExportTask(
+		taskKey,
 		"test_name",
 		"test_file",
 		"测试性能使用",
@@ -70,7 +91,7 @@ func TestTaskExport(t *testing.T) {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return 0
 	}
 
 	wg := sync.WaitGroup{}
@@ -110,13 +131,19 @@ func TestTaskExport(t *testing.T) {
 		}(key)
 	}
 	wg.Wait()
+
+	return id
 }
 
 func TestExport(t *testing.T) {
 	id := int64(96)
+	Export(id)
+}
+
+func Export(id int64) {
 	service.StartTask(id)
 
-	er := service.ExportToExcel(id, "./test_listing_desc.xlsx")
+	er := service.ExportToExcel(id, fmt.Sprintf("./test_listing_desc_%d.xlsx", id))
 	if er != nil {
 		fmt.Println(er)
 		return

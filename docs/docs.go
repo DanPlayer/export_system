@@ -41,10 +41,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/user.RegisterResponse"
-                        }
+                        "description": "OK"
                     }
                 }
             }
@@ -85,6 +82,74 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/tool.RealIPSchema"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/token": {
+            "post": {
+                "description": "获取AccessToken",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "授权中心"
+                ],
+                "summary": "获取AccessToken",
+                "parameters": [
+                    {
+                        "description": "参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.AccessTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.AccessTokenResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/token/refresh": {
+            "post": {
+                "description": "刷新AccessToken",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "授权中心"
+                ],
+                "summary": "刷新AccessToken",
+                "parameters": [
+                    {
+                        "description": "参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RefreshAccessTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.RefreshAccessTokenResponse"
                         }
                     }
                 }
@@ -230,9 +295,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/user/sms/login": {
+        "/v1/user/login": {
             "post": {
-                "description": "用户登录",
+                "description": "用户普通登录",
                 "consumes": [
                     "application/json"
                 ],
@@ -242,10 +307,44 @@ const docTemplate = `{
                 "tags": [
                     "用户"
                 ],
-                "summary": "用户登录",
+                "summary": "用户普通登录",
                 "parameters": [
                     {
                         "description": "用户登录参数",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/user.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/user.LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/user/sms/login": {
+            "post": {
+                "description": "用户短信登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "用户"
+                ],
+                "summary": "用户短信登录",
+                "parameters": [
+                    {
+                        "description": "参数",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -286,6 +385,57 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "auth.AccessTokenRequest": {
+            "type": "object",
+            "required": [
+                "access_key",
+                "access_secret"
+            ],
+            "properties": {
+                "access_key": {
+                    "description": "密钥key",
+                    "type": "string"
+                },
+                "access_secret": {
+                    "description": "密钥",
+                    "type": "string"
+                }
+            }
+        },
+        "auth.AccessTokenResponse": {
+            "type": "object",
+            "properties": {
+                "expire_time": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RefreshAccessTokenRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "description": "已获取的token",
+                    "type": "string"
+                }
+            }
+        },
+        "auth.RefreshAccessTokenResponse": {
+            "type": "object",
+            "properties": {
+                "expire_time": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "export.CreateTaskRequest": {
             "type": "object",
             "properties": {
@@ -398,6 +548,36 @@ const docTemplate = `{
                 }
             }
         },
+        "user.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "phone"
+            ],
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "手机号",
+                    "type": "string"
+                }
+            }
+        },
+        "user.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "鉴权",
+                    "type": "string"
+                },
+                "uid": {
+                    "description": "用户ID",
+                    "type": "string"
+                }
+            }
+        },
         "user.RegisterRequest": {
             "type": "object",
             "required": [
@@ -423,9 +603,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "user.RegisterResponse": {
-            "type": "object"
         },
         "user.SmsLoginRequest": {
             "type": "object",
@@ -455,7 +632,7 @@ const docTemplate = `{
                     "description": "验证签名",
                     "type": "string"
                 },
-                "userID": {
+                "uid": {
                     "description": "用户ID",
                     "type": "string"
                 }

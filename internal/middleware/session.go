@@ -86,8 +86,7 @@ func Auth() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			c.Set("userID", info.UserID)
-			c.Set("timUserID", info.TIMUserID)
+			c.Set("uid", info.UserID)
 			c.Set("name", info.NickName)
 			c.Set("avatar", info.Avatar)
 			c.Set("token", token)
@@ -148,7 +147,7 @@ func GetLoginTimUserID(c *gin.Context) string {
 
 // GetLoginUserID 获取登录的用户ID
 func GetLoginUserID(c *gin.Context) string {
-	userid, _ := c.Get("userID")
+	userid, _ := c.Get("uid")
 	return userid.(string)
 }
 

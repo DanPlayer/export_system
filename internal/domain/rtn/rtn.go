@@ -14,6 +14,7 @@ const (
 	UserAkExistError             rtnerr.RtnCode = 10009 // 用户AccessKey已存在
 	AuthTokenError               rtnerr.RtnCode = 10010 // 没有授权中心的权限
 	AuthGenerateAccessTokenError rtnerr.RtnCode = 10011 // 生成AccessToken失败
+	UserLoginError               rtnerr.RtnCode = 10012 // 账号密码错误
 )
 
 var rtnCodeMap = map[rtnerr.RtnCode]string{
@@ -28,6 +29,7 @@ var rtnCodeMap = map[rtnerr.RtnCode]string{
 	UserAkExistError:             "用户AccessKey已存在",
 	AuthTokenError:               "没有授权中心的权限",
 	AuthGenerateAccessTokenError: "生成AccessToken失败",
+	UserLoginError:               "账号密码错误",
 }
 
 func init() {

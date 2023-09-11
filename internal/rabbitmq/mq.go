@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -15,7 +16,7 @@ var Client = NewRabbitMQ()
 type RabbitMQ struct {
 	conn     *amqp.Connection
 	channel  *amqp.Channel
-	consumer map[string]<-chan amqp.Delivery
+	consumer sync.Map
 }
 
 type Options struct {
@@ -42,8 +43,6 @@ func NewRabbitMQ() *RabbitMQ {
 	// 获取channel
 	rabbitmq.channel, err = rabbitmq.conn.Channel()
 	rabbitmq.failOnErr(err, "failed to open a channel")
-
-	rabbitmq.consumer = make(map[string]<-chan amqp.Delivery, 10)
 
 	return rabbitmq
 }
@@ -118,7 +117,7 @@ func (r *RabbitMQ) DeclareConsume(key string) error {
 		return err
 	}
 
-	r.consumer[key] = consumer
+	r.consumer.Store(key, consumer)
 	return nil
 }
 
@@ -149,8 +148,12 @@ func (r *RabbitMQ) Pop(ctx context.Context, key string) <-chan string {
 	go func() {
 		for {
 			done := false
+			consumer, ok := r.consumer.Load(key)
+			if !ok {
+				continue
+			}
 			select {
-			case get = <-r.consumer[key]:
+			case get = <-consumer.(<-chan amqp.Delivery):
 				item = string(get.Body)
 				if item != "" {
 					list <- item

@@ -14,9 +14,6 @@ type RegisterRequest struct {
 	Avatar   string `json:"avatar"`                        // 头像
 }
 
-type RegisterResponse struct {
-}
-
 // Register
 // @Summary 用户添加
 // @Description 用户添加
@@ -24,7 +21,7 @@ type RegisterResponse struct {
 // @Accept json
 // @Produce json
 // @Param body body RegisterRequest true "用户添加参数"
-// @Success 200 {object} RegisterResponse
+// @Success 200
 // @Router /admin/user/register [post]
 func Register(c *gin.Context) {
 	var req RegisterRequest

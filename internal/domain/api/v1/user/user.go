@@ -10,6 +10,45 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type LoginRequest struct {
+	Phone    string `json:"phone" validate:"required"`    // 手机号
+	Password string `json:"password" validate:"required"` // 密码
+}
+
+type LoginResponse struct {
+	Token string `json:"token"` // 鉴权
+	UID   string `json:"uid"`   // 用户ID
+}
+
+// Login
+// @Summary 用户普通登录
+// @Description 用户普通登录
+// @Tags 用户
+// @Accept json
+// @Produce json
+// @Param body body LoginRequest true "用户登录参数"
+// @Success 200 {object} LoginResponse
+// @Router /v1/user/login [post]
+func Login(c *gin.Context) {
+	var req LoginRequest
+	_ = c.ShouldBindJSON(&req)
+	if err := validate.ParseStruct(req); err != nil {
+		utils.OutErrorJson(c, err)
+		return
+	}
+
+	token, uid, err := service.Login(req.Phone, req.Password)
+	if err != nil {
+		utils.OutRtnErrorJson(c, err)
+		return
+	}
+
+	utils.OutJson(c, LoginResponse{
+		Token: token,
+		UID:   uid,
+	})
+}
+
 type SmsLoginRequest struct {
 	Phone string `json:"phone" validate:"required"` // 手机号
 	Code  string `json:"code" validate:"required"`  // 验证码
@@ -18,16 +57,16 @@ type SmsLoginRequest struct {
 type SmsLoginResponse struct {
 	Token           string `json:"token"`           // 验证签名
 	ProfileComplete bool   `json:"profileComplete"` // 基本资料是否填充完成
-	UserID          string `json:"userID"`          // 用户ID
+	UID             string `json:"uid"`             // 用户ID
 }
 
 // SmsLogin
-// @Summary 用户登录
-// @Description 用户登录
+// @Summary 用户短信登录
+// @Description 用户短信登录
 // @Tags 用户
 // @Accept json
 // @Produce json
-// @Param body body SmsLoginRequest true "用户登录参数"
+// @Param body body SmsLoginRequest true "参数"
 // @Success 200 {object} SmsLoginResponse
 // @Router /v1/user/sms/login [post]
 func SmsLogin(c *gin.Context) {
@@ -46,7 +85,7 @@ func SmsLogin(c *gin.Context) {
 	utils.OutJson(c, SmsLoginResponse{
 		Token:           token,
 		ProfileComplete: complete,
-		UserID:          userId,
+		UID:             userId,
 	})
 }
 
