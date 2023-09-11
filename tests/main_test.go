@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+	"time"
 )
 
 func main(m *testing.M) {
@@ -48,12 +49,15 @@ func BenchmarkExportExcel(b *testing.B) {
 	count := int64(269276)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		fmt.Printf("write data start time:%s\n", time.Now())
 		var ids []uint
 		for i := 0; i < 5; i++ {
 			id := CreateTestTask(fmt.Sprintf("test_listing_desc_%d", i), count)
 			ids = append(ids, id)
 		}
+		fmt.Printf("write data end time:%s\n", time.Now())
 
+		fmt.Printf("cusume data start time:%s\n", time.Now())
 		wg := sync.WaitGroup{}
 		for _, id := range ids {
 			wg.Add(1)
@@ -63,6 +67,7 @@ func BenchmarkExportExcel(b *testing.B) {
 			}(id)
 		}
 		wg.Wait()
+		fmt.Printf("cusume data end time:%s\n", time.Now())
 	}
 }
 

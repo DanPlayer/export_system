@@ -596,8 +596,8 @@ gioui.org v0.0.0-20210308172011-57750fc8a0a6/go.mod h1:RSH6KIUZ0p2xy5zHDxgAM4zum
 git.sr.ht/~sbinet/gg v0.3.1/go.mod h1:KGYtlADtqsqANL9ueOFkWymvzUvLMQllU5Ixo+8v3pc=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/DanPlayer/exportcenter v1.0.3 h1:SmKnYup8iXU6qUxPM1WfUk/EDObndNnRtddWQHyOkpY=
-github.com/DanPlayer/exportcenter v1.0.3/go.mod h1:I+ppcRdOdeVEJZEolaOiIDgFLa2e04KBPfoWRFtzDEI=
+github.com/DanPlayer/exportcenter v1.0.5 h1:0qVaV5XGM0BcRPvxisk/Zs7wbe5Ck6ZjRr3o/RETJUM=
+github.com/DanPlayer/exportcenter v1.0.5/go.mod h1:I+ppcRdOdeVEJZEolaOiIDgFLa2e04KBPfoWRFtzDEI=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/JohnCGriffin/overflow v0.0.0-20211019200055-46fa312c352c/go.mod h1:X0CRv0ky0k6m906ixxpzmDRLvX58TFUKS2eePweuyxk=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=

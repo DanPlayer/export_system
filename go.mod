@@ -11,27 +11,22 @@ require (
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.15.3
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/goccy/go-json v0.10.2
-	github.com/panjf2000/ants/v2 v2.8.1
 	github.com/qiniu/go-sdk/v7 v7.17.1
 	github.com/rfyiamcool/go-timewheel v1.1.0
 	github.com/satori/go.uuid v1.2.0
-	github.com/sirupsen/logrus v1.9.3
 	github.com/sony/sonyflake v1.2.0
 	github.com/spf13/viper v1.16.0
 	github.com/streadway/amqp v1.1.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.2
-	github.com/xuri/excelize/v2 v2.8.0
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/gorm v1.25.4
 	gorm.io/plugin/dbresolver v1.4.7
 )
 
 require (
-	github.com/DanPlayer/exportcenter v1.0.3
+	github.com/DanPlayer/exportcenter v1.0.5
 	github.com/lionsoul2014/ip2region/binding/golang v0.0.0-20230731060429-6ed8bf011875
 	github.com/speps/go-hashids/v2 v2.0.1
 	golang.org/x/net v0.15.0 // indirect
