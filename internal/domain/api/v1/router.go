@@ -3,6 +3,7 @@ package v1
 import (
 	"export_system/internal/domain/api/v1/auth"
 	"export_system/internal/domain/api/v1/export"
+	"export_system/internal/domain/api/v1/task"
 	"export_system/internal/domain/api/v1/user"
 	"export_system/internal/domain/common"
 	"export_system/internal/middleware"
@@ -65,6 +66,12 @@ func Setup() common.ModuleOption {
 				Route:   "/export/task/data/push",
 				Method:  "POST",
 				Handles: []gin.HandlerFunc{middleware.AccessAuth(), export.PushExportData},
+			},
+			// 任务
+			{
+				Route:   "/task/page/list",
+				Method:  "GET",
+				Handles: []gin.HandlerFunc{middleware.Auth(), task.PageList},
 			},
 		},
 	}
